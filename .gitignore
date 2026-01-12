@@ -1,0 +1,15 @@
+# Python Standard Müll
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtuelle Umgebungen (WICHTIG!)
+.venv/
+venv/
+env/
+
+# VS Code Settings
+.vscode/
+
+# MuJoCo Logs oder temporäre Dateien (optional)
+*.log
