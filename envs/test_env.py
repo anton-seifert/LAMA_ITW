@@ -10,18 +10,35 @@ class RobotWorldEnv(gym.MujocoEnv):
         #load model from Path
         self.robot_model = mujoco.MjModel.from_xml_path(model_path)
         self.data = mujoco.MjData(self.robot_model)
-        
+
+        self.target_pos = np.array(1,1,1) # just for initialition
 
         # Define what the agent can observe
-        # TCP Pos, TCP Acceleration, Joint Angles, Joint Acceleration, Target Pos
         # Dict space gives us structured, human-readable observations
-        #nv = degrees of freedom
-        #nq = number of generalized coords, das kracht beim continums robot, weil dann quateriums oder so benutzt werden
-        number_of_observations = self.robot_model.nv + self.robot_model.nq + ...
+
+        # TCP Pos, TCP Acceleration, Joint Angles, Joint Velocity, Joint Acceleration, Target Pos
+
+        """
+        nv = degrees of freedom, also eig die number of velocities, or acceleration
+        nq = number of generalized coords, die angle position (das kracht beim continums robot, weil dann quateriums oder so benutzt werden, nicht 3 komponenten, sondern 4)
+        sensor 3 TCP Acc, 3 TCP Gyro
+        kinematic: 3 TCP pos, xyz
+        target: 3 Target_pos xyz
+        # """
+
+        number_of_agent_observations = self.robot_model.nq + 2*self.robot_model.nv
         self.observation_space = gym.spaces.Dict(
             {
-                "agent": gym.spaces.Box(low=-np.inf, high=np.inf, shape=(number_of_joints,), dtype=float32),   # motor drehmoment
+                #Joint angles and join acc    
+                "agent": gym.spaces.Box(low=-np.inf, high=np.inf, shape=(number_of_agent_observations, ), dtype=np.float32), 
 
+                #sensor data, tcp acc, (later on maybe IMU)
+                "sensors": gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self.robot_model.nsensor,), dtype = np.float32),
+
+                #has to be determined by inverse kinematics in reality
+                "tcp_pos": gym.spaces.Box(low=-np.inf, high=np.inf, shape=(3,), dtype = np.float32),
+
+                #Target Pos
                 "target": gym.spaces.Box(low=-np.inf,high=np.inf, shape=(3,), dtype=int),  # [x, y, z] coordinates
             }
         )
@@ -31,23 +48,27 @@ class RobotWorldEnv(gym.MujocoEnv):
         self.action_space = gym.spaces.Box(low=-1, high=1, shape=(number_of_actuaters,), dtype=np.float32),   # motor drehmoment
 
 
-        # Map action numbers to actual movements on the grid
-        # This makes the code more readable than using raw numbers
-        self._action_to_direction = {
-            0: np.array([0, 1]),   # Move right (column + 1)
-            1: np.array([-1, 0]),  # Move up (row - 1)
-            2: np.array([0, -1]),  # Move left (column - 1)
-            3: np.array([1, 0]),   # Move down (row + 1)
-        }
-
-
+        
     def _get_obs(self):
         """Convert internal state to observation format.
 
         Returns:
             dict: Observation with agent and target positions
         """
-        return {"agent": self._agent_location, "target": self._target_location}
+        
+        agent_obs = np.concatenate([self.data.qpos.flat[:], 
+                                    self.data.qvel.flat[:], 
+                                    self.data.qacc.flat[:]]).astype(np.float32)
+        
+        sensor_obs = np.concatenate([self.data.sensor("gyro").data.flat[:], 
+                                    self.data.sensor("accel").data.flat[:]]).astype(np.float32)
+
+        tcp_pos_obs = self.data.site("tcp").xpos.copy()
+
+        return {"agent": agent_obs,
+                "sensor": sensor_obs,
+                "tcp_pos": tcp_pos_obs,
+                "target": self.target_pos}
     
     def _get_info(self):
         """Compute auxiliary information for debugging.
