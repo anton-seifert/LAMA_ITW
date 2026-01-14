@@ -24,7 +24,7 @@
                     <joint name="joint2" type="hinge" axis="0 0 1" range="-180 180" damping ="0.4"/>
                     <geom type="cylinder" fromto="0 0 0 0.3 0 0" size="0.03" rgba="0.2 0.7 0.2 1" />
 
-                    <site name="imu_mount" pos="0.3 0 0" size="0.01" rgba="1 0 0 1"/>
+                    <site name="tcp" pos="0.3 0 0" size="0.01" rgba="1 0 0 1"/>
                 </body>
             </body>
         </body>
@@ -40,7 +40,7 @@
 	    <motor joint="joint2" ctrlrange="-10 10" ctrllimited="true"/>
     </actuator>
     <sensor>
-        <accelerometer name="accel" site="imu_mount"/>
-        <gyro name="gyro" site="imu_mount"/>
+        <accelerometer name="accel" site="tcp"/>
+        <gyro name="gyro" site="tcp"/>
   </sensor>
 </mujoco>
