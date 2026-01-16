@@ -12,6 +12,7 @@ class RobotWorldEnv(gym.MujocoEnv):
         self.data = mujoco.MjData(self.robot_model)
 
         self.target_pos = np.array(1,1,1) # just for initialition
+        self.info = {}  #just for initaliation, later on gets filled with for tracking succes
 
         # Define what the agent can observe
         # Dict space gives us structured, human-readable observations
@@ -74,12 +75,10 @@ class RobotWorldEnv(gym.MujocoEnv):
         """Compute auxiliary information for debugging.
 
         Returns:
-            dict: Info with distance between agent and target
+            dict: Info about KPIs like distance, energy...
         """
         return {
-            "distance": np.linalg.norm(
-                self._agent_location - self._target_location, ord=1
-            )
+            self.info
         }
     
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
@@ -95,15 +94,27 @@ class RobotWorldEnv(gym.MujocoEnv):
         # IMPORTANT: Must call this first to seed the random number generator
         super().reset(seed=seed)
 
-        # Randomly place the agent anywhere on the grid
-        self._agent_location = self.np_random.integers(0, self.size, size=2, dtype=int)
+        # start the robot in a random configuration(radnom pos and speed)
+        rng = np.random.default_rng()
+        #get joint_limits
+        joint_range_limits = self.robot_model.jnt_range #[[low1,high1][low2,high2]]
+        random_pos = rng.uniform(joint_range_limits[:,0], joint_range_limits[:,1], size=self.robot_model.nv)
+        
+        random_vel = rng.integers(low = 0.1, high= 1, size= self.robot_model.nv)
+        #write new positions to data with [:]
+        self.data.qpos[:] = random_pos
+        self.data.qvel[:] = random_vel
+        mujoco.mj_forward(self.model, self.data)
 
-        # Randomly place target, ensuring it's different from agent position
-        self._target_location = self._agent_location
-        while np.array_equal(self._target_location, self._agent_location):
-            self._target_location = self.np_random.integers(
-                0, self.size, size=2, dtype=int
-            )
+        # Randomly place target, ensuring it's different from tcp pos
+        geoms = self.data.geom_size
+        lenghts = [np.max(geom) for geom in geoms]
+        max_range = sum(lenghts)
+        self.target_pos = rng.uniform(low=0.1, high= 0.8*max_range, size= 3)
+        #if tcp pos and target are equal change target
+        # FIXME: dont compare pos, change to distance greater than
+        while np.array_equal(self.target_pos, self.data.site("tcp").xpos):
+            self.target_pos = rng.uniform(low=0.1, high= 0.8*max_range, size= 3)
 
         observation = self._get_obs()
         info = self._get_info()
@@ -114,12 +125,13 @@ class RobotWorldEnv(gym.MujocoEnv):
         """Execute one timestep within the environment.
 
         Args:
-            action: The action to take (0-3 for directions)
+            action: The action to take 
 
         Returns:
             tuple: (observation, reward, terminated, truncated, info)
         """
-        # Map the discrete action (0-3) to a movement direction
+        # Map the action to motor torque
+
         direction = self._action_to_direction[action]
 
         # Update agent position, ensuring it stays within grid bounds
@@ -135,12 +147,23 @@ class RobotWorldEnv(gym.MujocoEnv):
         # (could add a step limit here if desired)
         truncated = False
 
-        # Simple reward structure: +1 for reaching target, 0 otherwise
-        # Alternative: could give small negative rewards for each step to encourage efficiency
+        
         distance = np.linalg.norm(self._agent_location - self._target_location)
-        reward = 1 if terminated else -0.1 * distance
+        energy = ...
+        time = ...
 
+        self.info = {"distance": distance,
+                     "energy": energy,
+                     "time": time
+                    }
+        
+
+        reward = self.calculate_reward(self.info)
         observation = self._get_obs()
-        info = self._get_info()
+        info = self.info
 
         return observation, reward, terminated, truncated, info
+    
+    def calculate_reward(self, measurements: dict):
+            reward = measurements
+            return reward
