@@ -1,9 +1,10 @@
 import gymnasium as gym
 import numpy as np
 import mujoco
+from gymnasium.envs.mujoco import MujocoEnv
 
 
-class RobotWorldEnv(gym.MujocoEnv):
+class RobotWorldEnv(MujocoEnv):
     
     def __init__(self, model_path: str):
     
