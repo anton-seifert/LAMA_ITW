@@ -5,7 +5,7 @@ from gymnasium.envs.mujoco import MujocoEnv
 from typing import Optional
 
 
-class RobotWorldEnv(MujocoEnv):
+class RobotWorldEnv(gym.Env):
     
     def __init__(self, model_path: str):
     
@@ -13,7 +13,7 @@ class RobotWorldEnv(MujocoEnv):
         self.model = mujoco.MjModel.from_xml_path(model_path)
         self.data = mujoco.MjData(self.model)
 
-        self.target_pos = np.array(1,1,1) # just for initialition
+        self.target_pos = np.array([1,1,1]) # just for initialition
         self.steps_passed = 0
         self.goal_distance = 0.1
         self.info = {}  #just for initaliation, later on gets filled with for tracking succes
@@ -36,7 +36,7 @@ class RobotWorldEnv(MujocoEnv):
         number_of_agent_observations = self.model.nq + 2*self.model.nv
         self.observation_space = gym.spaces.Dict(
             {
-                #Joint angles and join acc    
+                #Joint angles, joint vel, join acc   
                 "agent": gym.spaces.Box(low=-np.inf, high=np.inf, shape=(number_of_agent_observations, ), dtype=np.float32), 
 
                 #sensor data, tcp acc, (later on maybe IMU)
@@ -46,7 +46,7 @@ class RobotWorldEnv(MujocoEnv):
                 "tcp_pos": gym.spaces.Box(low=-np.inf, high=np.inf, shape=(3,), dtype = np.float32),
 
                 #Target Pos
-                "target": gym.spaces.Box(low=-np.inf,high=np.inf, shape=(3,), dtype=int),  # [x, y, z] coordinates
+                "target": gym.spaces.Box(low=-np.inf,high=np.inf, shape=(3,), dtype=np.float64),  # [x, y, z] coordinates
             }
         )
 
@@ -70,7 +70,7 @@ class RobotWorldEnv(MujocoEnv):
         sensors_obs = np.concatenate([self.data.sensor("gyro").data.flat[:], 
                                     self.data.sensor("accel").data.flat[:]]).astype(np.float32)
 
-        tcp_pos_obs = self.data.site("tcp").xpos.copy()
+        tcp_pos_obs = self.data.site("tcp").xpos.copy().astype(np.float32)
 
         return {"agent": agent_obs,
                 "sensors": sensors_obs,
@@ -146,7 +146,7 @@ class RobotWorldEnv(MujocoEnv):
         distance = np.linalg.norm(tcp_pos - self.target_pos)
 
         # Check if agent reached the target
-        terminated = distance < self.goal_distance
+        terminated = bool(distance < self.goal_distance)
 
         # We don't use truncation in this simple environment
         # (could add a step limit here if desired)
@@ -174,10 +174,10 @@ class RobotWorldEnv(MujocoEnv):
     def calculate_reward(self, measurements: dict):
             self.rewards = {}
             
-            #distance worth the most [0, 10]
+            #distance worth the most 
             self.rewards["distance_reward"] = -3*measurements["distance"]
             
-            #energy [-5, 0] 
+            #energy  
             self.rewards["energy_reward"] = -0.1*(measurements["energy"]/self.max_energy)
 
             if measurements["distance"] < self.goal_distance:
@@ -185,11 +185,11 @@ class RobotWorldEnv(MujocoEnv):
             else:
                 self.rewards["goal_reward"] = 0
 
-            reward = np.sum(self.rewards.values())
+            reward = sum(self.rewards.values())
             return reward
     
     def calculate_target_for_sphere(self):
-        geoms = self.data.geom_size
+        geoms = self.model.geom_size
         lenghts = [np.max(geom) for geom in geoms]
         max_range = sum(lenghts)
         phi = self.np_random.uniform(low=0, high= 2*np.pi, size=1)
@@ -198,7 +198,7 @@ class RobotWorldEnv(MujocoEnv):
         x = radius*np.sin(theta)*np.cos(phi)
         y = radius*np.sin(theta)*np.sin(phi)
         z = radius*np.cos(theta)
-        return np.array([x,y,z].flatten())
+        return np.array([x,y,z]).flatten()
     
     def get_rewards(self):
         return self.rewards
