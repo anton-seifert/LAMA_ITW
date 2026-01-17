@@ -204,7 +204,9 @@ class RobotWorldEnv(gym.Env):
         max_range = sum(lenghts)
         phi = self.np_random.uniform(low=0, high= 2*np.pi, size=1)
         theta = self.np_random.uniform(low=0, high= np.pi/2, size=1)
-        radius = self.np_random.uniform(low=0.1, high= 0.95*max_range, size=1)
+        # HACK: theta set to 90° for planar 
+        theta = np.pi/2 
+        radius = self.np_random.uniform(low=0.1, high= 0.8*max_range, size=1)
         x = radius*np.sin(theta)*np.cos(phi)
         y = radius*np.sin(theta)*np.sin(phi)
         z = radius*np.cos(theta)
@@ -226,6 +228,14 @@ class RobotWorldEnv(gym.Env):
             
             self.viewer.sync()
             
-            # Optional: Target visualisieren (wenn du eine Site 'target' im XML hast)
-            site_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_SITE, "target")
-            if site_id != -1: self.model.site_pos[site_id] = self.target_pos
+            # visalize target with movable body named target
+            body_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, "target")
+
+            if body_id != -1:
+                # Die Mocap-ID holen (Mapping von Body -> Mocap)
+                mocap_id = self.model.body_mocapid[body_id]
+
+            if mocap_id != -1:
+                self.data.mocap_pos[mocap_id] = self.target_pos 
+                # update kinematics
+                mujoco.mj_forward(self.model, self.data) 

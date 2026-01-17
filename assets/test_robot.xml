@@ -10,6 +10,11 @@
         <light pos="0 0 3" dir="0 0 -1" diffuse="1 1 1"/>
         <geom name="floor" pos = " 0 0 -0.5" type="plane" size="2 2 0.1" rgba=".9 .9 .9 1"/>
 
+        <!-- target body for rendering -->
+        <body name="target" mocap="true" pos="0.5 0.5 0.5">
+            <geom type="sphere" size="0.05" rgba="1 0 0 1" conaffinity="0" contype="0"/>
+        </body>
+
         <!-- Base of the robotic arm -->
         <body name="base" pos="0 0 0">
             <geom type="sphere" size="0.05" rgba="0.7 0.2 0.2 1" />
@@ -23,8 +28,8 @@
                 <body name="link2" pos="0.3 0 0">
                     <joint name="joint2" type="hinge" axis="0 0 1" range="-180 180" damping ="0.4"/>
                     <geom type="cylinder" fromto="0 0 0 0.3 0 0" size="0.03" rgba="0.2 0.7 0.2 1" />
-
-                    <site name="tcp" pos="0.3 0 0" size="0.01" rgba="1 0 0 1"/>
+                    <!-- Tool Center Point with IMU -->
+                    <site name="tcp" pos="0.3 0 0" size="0.01" rgba="0 0 1 1"/>
                 </body>
             </body>
         </body>
