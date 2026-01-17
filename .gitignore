@@ -13,3 +13,5 @@ env/
 
 # MuJoCo Logs oder temporäre Dateien (optional)
 *.log
+
+tensorboard/
