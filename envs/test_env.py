@@ -215,5 +215,5 @@ class RobotWorldEnv(gym.Env):
             self.viewer.sync()
             
             # Optional: Target visualisieren (wenn du eine Site 'target' im XML hast)
-            # site_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_SITE, "target")
-            # if site_id != -1: self.model.site_pos[site_id] = self.target_pos
+            site_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_SITE, "target")
+            if site_id != -1: self.model.site_pos[site_id] = self.target_pos
