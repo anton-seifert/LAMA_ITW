@@ -26,7 +26,7 @@ env = RobotWorldEnv(modelpath)
 #Checks if Costum env corresponds GymAPI  
 check_env(env)
 
-model = PPO(env,"MlpPolicy",device="cpu",tensorboard_log ="./ppo_test_robot_tensorboard/")
+model = PPO("MultiInputPolicy",env,device="cpu",tensorboard_log ="./ppo_test_robot_tensorboard/")
 
 model.learn(total_timesteps=5_000,progress_bar=True)
 
