@@ -3,11 +3,13 @@ import numpy as np
 import mujoco
 from gymnasium.envs.mujoco import MujocoEnv
 from typing import Optional
+from mujoco import viewer
+
 
 
 class RobotWorldEnv(gym.Env):
     
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str, render_mode: Optional[str] = None):
     
         #load model from Path
         self.model = mujoco.MjModel.from_xml_path(model_path)
@@ -19,6 +21,9 @@ class RobotWorldEnv(gym.Env):
         self.info = {}  #just for initaliation, later on gets filled with for tracking succes
         self.rewards = {} #might be useful for tracking later on
         self.max_energy = np.sum(np.square(self.model.actuator_ctrlrange[:,1]))
+
+        self.viewer = None
+        self.render_mode = render_mode
 
         # Define what the agent can observe
         # Dict space gives us structured, human-readable observations
@@ -164,6 +169,11 @@ class RobotWorldEnv(gym.Env):
                     "steps_passed": self.steps_passed
                     }
         
+        #render if render_mode is specified, skip if none
+        if self.render_mode == "human":
+            self.render()
+        elif self.render_mode == "rgb_array":
+            self.render()
 
         reward = self.calculate_reward(self.info)
         observation = self._get_obs()
@@ -206,9 +216,11 @@ class RobotWorldEnv(gym.Env):
     def render(self):
         """Full chatty, keine ahnung was hier passiert"""
         # Minimaler Render-Code für gym.Env
+        if self.render_mode == "rgb_array":
+            return self._get_rgb_array()
+
         if self.render_mode == "human":
             if self.viewer is None:
-                from mujoco import viewer
                 # Startet den passiven Viewer
                 self.viewer = viewer.launch_passive(self.model, self.data)
             
