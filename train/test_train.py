@@ -4,6 +4,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
 import os
 import sys
+import time
 
 #Add parent directory to sys.path to resolve cross-directory imports from sibling packages
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -26,8 +27,9 @@ env = RobotWorldEnv(modelpath)
 #Checks if Costum env corresponds GymAPI  
 check_env(env)
 
-model = PPO("MultiInputPolicy",env,device="cpu",tensorboard_log ="./ppo_test_robot_tensorboard/")
+model = PPO("MultiInputPolicy",env,device="cpu",tensorboard_log ="./tensorboard/ppo_test_robot_tensorboard/")
 
-model.learn(total_timesteps=5_000,progress_bar=True)
+model.learn(total_timesteps=10000,progress_bar=True)
 
-model.save(f"{save_dir}/ppo_test_robot")
+model.save(f"{save_dir}/ppo_test_robot_{time.ctime()}")
+
