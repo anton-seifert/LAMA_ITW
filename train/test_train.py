@@ -17,7 +17,17 @@ folder_name = "assets"
 file_name = "test_robot.xml"
 modelpath = os.path.join(folder_name, file_name)
 
+save_dir = "models/ppo_training/"
+os.makedirs(save_dir, exist_ok=True)
+
+
 env = RobotWorldEnv(modelpath)
 
-#Testen ob env der GymAPI entspricht 
+#Checks if Costum env corresponds GymAPI  
 check_env(env)
+
+model = PPO(env,"MlpPolicy",device="cpu",tensorboard_log ="./ppo_test_robot_tensorboard/")
+
+model.learn(total_timesteps=5_000,progress_bar=True)
+
+model.save(f"{save_dir}/ppo_test_robot")
