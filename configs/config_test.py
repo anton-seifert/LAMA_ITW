@@ -1,1 +1,0 @@
-print("hello, wir sind in der config")
