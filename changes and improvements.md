@@ -47,7 +47,7 @@ PPO TUNING (MUJOCO/ROBOTIK) - QUICK START
    Minimal erhöhen (z.B. 0.001), um Exploration zu erzwingen und Stillstand zu vermeiden.
 
 6. n_steps:
-   Zwischen 2048 und 4096 belassen für ausreichend Daten pro Update.
+   Zwischen 2048 und 4096 belassen für ausreichend Daten pro Update. -> wenn man n_envs erhöht  reduzeiren 
 
 
 
