@@ -16,5 +16,5 @@ env/
 
 tensorboard/
 monitor_logs/
-models/ppo_training/models_vecnorm
-models/ppo_training/models
+models/ppo_training/models_vecnorm/
+models/ppo_training/models/
