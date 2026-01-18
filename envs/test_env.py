@@ -24,6 +24,7 @@ class RobotWorldEnv(gym.Env):
 
         self.viewer = None
         self.render_mode = render_mode
+        self.max_steps = 10_000
 
         # Define what the agent can observe
         # Dict space gives us structured, human-readable observations
@@ -155,7 +156,7 @@ class RobotWorldEnv(gym.Env):
 
         # We don't use truncation in this simple environment
         # (could add a step limit here if desired)
-        truncated = False
+        truncated = self.steps_passed > self.max_steps
 
         #doesnt accuratly calculate energy, but strongly correlates
         
