@@ -49,3 +49,15 @@ PPO TUNING (MUJOCO/ROBOTIK) - QUICK START
 6. n_steps:
    Zwischen 2048 und 4096 belassen für ausreichend Daten pro Update.
 
+
+
+
+
+ZUM EVALUIEREN!!!! UND TRANIEREN 
+
+
+- CALLBACK FUNKTION ODER ALLGMEIN CALLBACK BENUTZEN 
+
+- Wichtige Metriken: 
+Average Cumulative Reward (Return), Success Rate, Sample Efficiency
+-> SB3 Monitor benutzen, teilweise müssen wir dazu noch was in die Env implementieren
