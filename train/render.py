@@ -2,7 +2,7 @@ import gymnasium as gym
 from stable_baselines3 import PPO # change to right policy
 import os
 import sys
-
+import time
 #Add parent directory to sys.path to resolve cross-directory imports from sibling packages
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -33,8 +33,8 @@ def render(robot_model_path: str, trained_model_path: str):
         
         # Optional: Ein bisschen warten, falls es zu schnell geht
         # time.sleep(0.01)
-
+    time.sleep(10)
     env.close()
 
 if __name__ == "__main__":
-    render(robot_model_path="assets/test_robot.xml", trained_model_path="models/ppo_training/ppo_test_robot_20260117-172921.zip")
+    render(robot_model_path="assets/test_robot.xml", trained_model_path=".models/ppo_training/best_models/best_model_20260118-233559/best_model.zip")
