@@ -34,11 +34,11 @@ def train(env, config: Optional[dict] = None):
     check_env(env_control)
     env_control.close()
 
-    vec_check_env = make_vec_env(env, n_envs=1,env_kwargs={"model_path":modelpath}, vec_env_cls=DummyVecEnv,monitor_dir=f"./monitor_logs/logs_check{timestamp}")
+    vec_check_env = make_vec_env(env, n_envs=8,env_kwargs={"model_path":modelpath}, vec_env_cls=SubprocVecEnv,monitor_dir=f"./monitor_logs/logs_check{timestamp}")
    # vec_check_env = VecMonitor(vec_check_env, filename=f"./monitor_logs/logs_check{timestamp}" )
     vec_check_env = VecNormalize(vec_check_env, norm_obs=True, norm_reward=False, training=False)
 
-    vec_train_env = make_vec_env(env,n_envs=1, env_kwargs={"model_path":modelpath},vec_env_cls=DummyVecEnv, monitor_dir=f"./monitor_logs/logs_train{timestamp}")
+    vec_train_env = make_vec_env(env,n_envs=8, env_kwargs={"model_path":modelpath},vec_env_cls=SubprocVecEnv, monitor_dir=f"./monitor_logs/logs_train{timestamp}")
    # vec_train_env = VecMonitor(vec_train_env, filename=f"./monitor_logs/logs_train{timestamp}")    # is_sucessfull, usw. noch hinzufügen  , info_keywords=("distance") 
     vec_train_env = VecNormalize(vec_train_env , norm_obs=True, norm_reward=True)
    
@@ -46,7 +46,7 @@ def train(env, config: Optional[dict] = None):
     eval_callback = EvalCallback(vec_check_env, best_model_save_path=f"models/ppo_training/best_models/best_model_{timestamp}", eval_freq=5000,deterministic=True, render=False)
 
 
-    model = PPO("MultiInputPolicy" ,vec_train_env , device="cpu" ,tensorboard_log ="./tensorboard/ppo_test_robot_tensorboard/")
+    model = PPO("MultiInputPolicy" ,vec_train_env , device="cpu" ,tensorboard_log ="./tensorboard/ppo_test_robot_tensorboard/",verbose=0)
 
     model.learn(total_timesteps=1_00_000,callback=eval_callback,progress_bar=True)
 
