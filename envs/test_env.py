@@ -9,22 +9,33 @@ from mujoco import viewer
 
 class RobotWorldEnv(gym.Env):
     
-    def __init__(self, model_path: str, render_mode: Optional[str] = None, config: Optional[dict] = None):
-    
+    def __init__(self, config: Optional[dict] = None, render_mode: Optional[str] = None, ):
+        #LOAD Variables from config
+        #first value = key from dict, second value fallback default value
+        model_path = config.get("robot_model_path")
+        self.goal_distance = config.get("goal_distance", 0.1)
+        self.max_steps = config.get("max_steps", 1_000)
+        self.seed = config.get("seed")
+        self.distance_reward_factor = config.get("distance_reward")
+        self.energy_reward_factor = config.get("energy_reward")
+        self.goal_reward_factor = config.get("goal_reward")
+        print(self.distance_reward_factor)
+        print(self.energy_reward_factor)
+        print(self.goal_reward_factor)
+        print(model_path)
+
         #load model from Path
         self.model = mujoco.MjModel.from_xml_path(model_path)
         self.data = mujoco.MjData(self.model)
 
         self.target_pos = np.array([1,1,1]) # just for initialition
         self.steps_passed = 0
-        self.goal_distance = 0.1
         self.info = {}  #just for initaliation, later on gets filled with for tracking succes
         self.rewards = {} #might be useful for tracking later on
         self.max_energy = np.sum(np.square(self.model.actuator_ctrlrange[:,1]))
 
         self.viewer = None
         self.render_mode = render_mode
-        self.max_steps = 10_000
 
         # Define what the agent can observe
         # Dict space gives us structured, human-readable observations
@@ -102,7 +113,7 @@ class RobotWorldEnv(gym.Env):
             tuple: (observation, info) for the initial state
         """
         # IMPORTANT: Must call this first to seed the random number generator
-        super().reset(seed=seed)
+        super().reset(seed=self.seed)
 
         self.steps_passed = 0
 
@@ -117,12 +128,16 @@ class RobotWorldEnv(gym.Env):
         self.data.qvel[:] = random_vel
         mujoco.mj_forward(self.model, self.data)
 
+
         # Randomly place target, ensuring it's different from tcp pos
         self.target_pos = self.calculate_target_for_sphere()
         #if tcp pos and target are equal change target
         # FIXME: dont compare pos, change to distance greater than
-        while np.array_equal(self.target_pos, self.data.site("tcp").xpos):
+        tcp_pos = self.data.site("tcp").xpos
+        distance = np.linalg.norm(tcp_pos - self.target_pos)
+        while (distance <= self.goal_distance):
             self.target_pos = self.calculate_target_for_sphere()
+            distance = np.linalg.norm(tcp_pos - self.target_pos)
 
         observation = self._get_obs()
         info = self._get_info()
@@ -186,13 +201,13 @@ class RobotWorldEnv(gym.Env):
             self.rewards = {}
             
             #distance worth the most 
-            self.rewards["distance_reward"] = -3*measurements["distance"]
+            self.rewards["distance_reward"] = -self.distance_reward_factor*measurements["distance"]
             
             #energy  
-            self.rewards["energy_reward"] = -0.1*(measurements["energy"]/self.max_energy)
+            self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"]/self.max_energy)
 
             if measurements["distance"] < self.goal_distance:
-                self.rewards["goal_reward"] = 50
+                self.rewards["goal_reward"] = self.goal_reward_factor
             else:
                 self.rewards["goal_reward"] = 0
 
