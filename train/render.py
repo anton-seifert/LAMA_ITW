@@ -14,7 +14,7 @@ def render(robot_model_path: str, trained_model_path: str):
     env = RobotWorldEnv(model_path=robot_model_path, render_mode="human")
 
     # 2. Modell laden
-    model = PPO.load(trained_model_path)
+    model = PPO.load(trained_model_path, device= "cpu")
 
     # 3. Der Loop
     obs, _ = env.reset()
@@ -37,4 +37,4 @@ def render(robot_model_path: str, trained_model_path: str):
     env.close()
 
 if __name__ == "__main__":
-    render(robot_model_path="assets/test_robot.xml", trained_model_path=".models/ppo_training/best_models/best_model_20260118-233559/best_model.zip")
+    render(robot_model_path="assets/test_robot.xml", trained_model_path="models/ppo_training/best_models/best_model_20260119-000937/best_model.zip")
