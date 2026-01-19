@@ -120,9 +120,11 @@ class RobotWorldEnv(gym.Env):
         # Randomly place target, ensuring it's different from tcp pos
         self.target_pos = self.calculate_target_for_sphere()
         #if tcp pos and target are equal change target
-        # FIXME: dont compare pos, change to distance greater than
-        while np.array_equal(self.target_pos, self.data.site("tcp").xpos):
+        tcp_pos = self.data.site("tcp").xpos
+        distance = np.linalg.norm(tcp_pos - self.target_pos)
+        while (distance <= self.goal_distance):
             self.target_pos = self.calculate_target_for_sphere()
+            distance = np.linalg.norm(tcp_pos - self.target_pos) 
 
         observation = self._get_obs()
         info = self._get_info()
