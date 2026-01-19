@@ -1,13 +1,13 @@
 from typing import Optional
 
 #import subscripts
-from configurations import config_test
+
 from envs.test_env import RobotWorldEnv
 
 from train import test_train
 from train import render
 
-def main(model_path : str, config_path : Optional[str] = None):
+def main(config: Optional[dict] = None):
 
     """
     run a training cycle with specified parameters
@@ -21,20 +21,20 @@ def main(model_path : str, config_path : Optional[str] = None):
 
     #TODO: implement random gen
     random_seed = False
-    config = config_path
+    
 
     #LOADING CONFIG
-    if config_path != None:
+    if config != None:
         print("loading config")
         #TODO: read from file
         env_config = ...
         train_config = ...
-    elif config_path == None:
+    elif config == None:
         env_config = {"distance_reward" : 0.1}
         train_config = {"Policy" : "MlpPolicy"}
 
     #TRAINING
-
+    #TODO: env creation auch ins training
     env = make_vec_env(RobotWorldEnv(config),n_envs=6, env_kwargs={"model_path":modelpath},vec_env_cls=SubprocVecEnv)
     test_train(env = env, config = config)
     #TODO: hier test run zu evaluation
@@ -47,7 +47,8 @@ def main(model_path : str, config_path : Optional[str] = None):
     
 
 if __name__ == "__main__" :
-    main(config_path)
+    from configurations.config_test import Settings as config_dict
+    main(config= config_dict)
 
     
 

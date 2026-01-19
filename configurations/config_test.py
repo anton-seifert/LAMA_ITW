@@ -1,6 +1,6 @@
 print("hello, wir sind in der config")
 
-Config = {
+Settings = {
     #GENERAL INFO
     ""
     "robot_model": "name of xml",
