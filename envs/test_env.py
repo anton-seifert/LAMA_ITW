@@ -10,6 +10,7 @@ from mujoco import viewer
 class RobotWorldEnv(gym.Env):
     
     def __init__(self, config: Optional[dict] = None, render_mode: Optional[str] = None, ):
+        print("creating env...")
         #LOAD Variables from config
         #first value = key from dict, second value fallback default value
         model_path = config.get("robot_model_path")
@@ -127,10 +128,9 @@ class RobotWorldEnv(gym.Env):
 
         # Randomly place target, ensuring it's different from tcp pos
         self.target_pos = self.calculate_target_for_sphere()
-        #if tcp pos and target are equal change target
-        # FIXME: dont compare pos, change to distance greater than
         tcp_pos = self.data.site("tcp").xpos
-        distance = np.linalg.norm(tcp_pos - self.target_pos)
+        distance = np.linalg.norm(tcp_pos - 2*self.target_pos)
+        #if tcp pos and target are too close, look for new target
         while (distance <= self.goal_distance):
             self.target_pos = self.calculate_target_for_sphere()
             distance = np.linalg.norm(tcp_pos - self.target_pos)
@@ -216,12 +216,12 @@ class RobotWorldEnv(gym.Env):
         max_range = sum(lenghts)
         phi = self.np_random.uniform(low=0, high= 2*np.pi, size=1)
         theta = self.np_random.uniform(low=0, high= np.pi/2, size=1)
-        # HACK: theta set to 90° for planar, max radius is set to fixed value
+        #HACK: theta set to 90° for planar z = 0, max radius is set to fixed value
         theta = np.pi/2 
         radius = self.np_random.uniform(low=0.1, high= 0.55, size=1)
         x = radius*np.sin(theta)*np.cos(phi)
         y = radius*np.sin(theta)*np.sin(phi)
-        z = radius*np.cos(theta)
+        z = 0 #radius*np.cos(theta)
         return np.array([x,y,z]).flatten()
     
     def get_rewards(self):
