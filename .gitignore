@@ -21,3 +21,7 @@ models/ppo_training/models/
 
 models/PPO_training/models_vecnorm/
 models/PPO_training/models/
+
+videos/
+
+interisting_models/
