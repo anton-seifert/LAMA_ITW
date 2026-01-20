@@ -9,22 +9,30 @@ from mujoco import viewer
 
 class RobotWorldEnv(gym.Env):
     
-    def __init__(self, model_path: str, render_mode: Optional[str] = None, config: Optional[dict] = None):
-    
+    def __init__(self, config: Optional[dict] = None, render_mode: Optional[str] = None, ):
+        print("creating env...")
+        #LOAD Variables from config
+        #first value = key from dict, second value fallback default value
+        model_path = config.get("robot_model_path")
+        self.goal_distance = config.get("goal_distance", 0.1)
+        self.max_steps = config.get("max_steps", 1_000)
+        self.distance_reward_factor = config.get("distance_reward", 20)
+        self.energy_reward_factor = config.get("energy_reward", 0.2)
+        self.goal_reward_factor = config.get("goal_reward", 50)
+        
+
         #load model from Path
         self.model = mujoco.MjModel.from_xml_path(model_path)
         self.data = mujoco.MjData(self.model)
 
         self.target_pos = np.array([1,1,1]) # just for initialition
         self.steps_passed = 0
-        self.goal_distance = 0.1
         self.info = {}  #just for initaliation, later on gets filled with for tracking succes
         self.rewards = {} #might be useful for tracking later on
         self.max_energy = np.sum(np.square(self.model.actuator_ctrlrange[:,1]))
 
         self.viewer = None
         self.render_mode = render_mode
-        self.max_steps = 10_000
 
         # Define what the agent can observe
         # Dict space gives us structured, human-readable observations
@@ -117,14 +125,15 @@ class RobotWorldEnv(gym.Env):
         self.data.qvel[:] = random_vel
         mujoco.mj_forward(self.model, self.data)
 
+
         # Randomly place target, ensuring it's different from tcp pos
         self.target_pos = self.calculate_target_for_sphere()
-        #if tcp pos and target are equal change target
         tcp_pos = self.data.site("tcp").xpos
-        distance = np.linalg.norm(tcp_pos - self.target_pos)
+        distance = np.linalg.norm(tcp_pos - 2*self.target_pos)
+        #if tcp pos and target are too close, look for new target
         while (distance <= self.goal_distance):
             self.target_pos = self.calculate_target_for_sphere()
-            distance = np.linalg.norm(tcp_pos - self.target_pos) 
+            distance = np.linalg.norm(tcp_pos - self.target_pos)
 
         observation = self._get_obs()
         info = self._get_info()
@@ -188,13 +197,13 @@ class RobotWorldEnv(gym.Env):
             self.rewards = {}
             
             #distance worth the most 
-            self.rewards["distance_reward"] = -3*measurements["distance"]
+            self.rewards["distance_reward"] = -self.distance_reward_factor*measurements["distance"]
             
             #energy  
-            self.rewards["energy_reward"] = -0.1*(measurements["energy"]/self.max_energy)
+            self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"]/self.max_energy)
 
             if measurements["distance"] < self.goal_distance:
-                self.rewards["goal_reward"] = 50
+                self.rewards["goal_reward"] = self.goal_reward_factor
             else:
                 self.rewards["goal_reward"] = 0
 
@@ -207,12 +216,12 @@ class RobotWorldEnv(gym.Env):
         max_range = sum(lenghts)
         phi = self.np_random.uniform(low=0, high= 2*np.pi, size=1)
         theta = self.np_random.uniform(low=0, high= np.pi/2, size=1)
-        # HACK: theta set to 90° for planar, max radius is set to fixed value
+        #HACK: theta set to 90° for planar z = 0, max radius is set to fixed value
         theta = np.pi/2 
         radius = self.np_random.uniform(low=0.1, high= 0.55, size=1)
         x = radius*np.sin(theta)*np.cos(phi)
         y = radius*np.sin(theta)*np.sin(phi)
-        z = radius*np.cos(theta)
+        z = 0 #radius*np.cos(theta)
         return np.array([x,y,z]).flatten()
     
     def get_rewards(self):

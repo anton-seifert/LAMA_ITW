@@ -12,6 +12,8 @@ Policy evaulieren (test Set)?
 
 config datei? 
 
+energy über die acceleration berechnen
+
 # Changes we got to make later on for the contiuum robot:
 
 
