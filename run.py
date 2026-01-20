@@ -12,23 +12,18 @@ def main(config: Optional[dict] = None):
     Result are saved to ...
     """
 
-    #TODO: load from config file
     #TODO: evaluate on train set and safe succes rate 
     #TODO: save time also on file
 
-    #TODO: implement random gen
-    random_seed = False
     
 
     #LOADING CONFIG
     if config != None:
         print("loading from config")
-        #TODO: read from file
         
     elif config == None:
         print("NOT loading from config, defining a new one")
-        env_config = {"distance_reward" : 0.1}
-        train_config = {"Policy" : "MlpPolicy"}
+        
 
     #TRAINING
     
