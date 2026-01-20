@@ -49,7 +49,7 @@ def train(config: Optional[dict] = None):
     vec_env_cls = ... #was bist du?
     device = config.get("device", "cpu")
     verbose = ...#was bist du?
-    total_timesteps = config.get("total_timesteps", 123_456)
+    timesteps_per_env = config.get("timesteps_per_env", 100)
     seed = config.get("seed", 42)
     eval_freq = config.get("eval_freq", 5555)
     timestamp = config.get("timestamp", 000000000)
@@ -59,12 +59,14 @@ def train(config: Optional[dict] = None):
     n_eval_episodes = config.get("n_eval_episodes", 20)
     pc = config.get("PC", "An")
 
-
+    
     #Mapping Variables from String
     Algo_Class : Type[BaseAlgorithm] = ALGO_MAP[algo]
     Env_Class = ENV_MAP[env]
     n_train_envs = N_ENV_MAP[pc]
+    print(f"\nRunning {algo} in the {env} Environmenet on {pc} PC")
 
+    total_timesteps = timesteps_per_env*n_train_envs
     #modelpath = os.path.join(folder_name, file_name)
     #timestamp = time.strftime("%Y%m%d-%H%M%S")
 
@@ -77,7 +79,7 @@ def train(config: Optional[dict] = None):
     env_control.close()
 
     print(f"\ncreating {n_check_envs} CHECK envs:")
-    vec_check_env = make_vec_env(Env_Class, seed = seed, n_envs = n_check_envs, env_kwargs={"config":config}, vec_env_cls=SubprocVecEnv,monitor_dir=f"./monitor_logs/{algo}_training/logs_check_{timestamp}")
+    vec_check_env = make_vec_env(Env_Class, seed = 1111, n_envs = n_check_envs, env_kwargs={"config":config}, vec_env_cls=SubprocVecEnv,monitor_dir=f"./monitor_logs/{algo}_training/logs_check_{timestamp}")
     #TODO: ist das richtig so, dass norm_reward false ist,weil im train env ist das nicht so
     vec_check_env = VecNormalize(vec_check_env, norm_obs=True, norm_reward=False, training=False)
 

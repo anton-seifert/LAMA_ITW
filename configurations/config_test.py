@@ -19,15 +19,15 @@ Settings = {
     "goal_distance" : 0.1,
     "max_steps": 3_000,
 
-    "distance_reward" : 20,
-    "energy_reward" : 0.2,
+    "distance_reward" : 30,
+    "energy_reward" : 20,
     "goal_reward" : 50,
     
 
     #TRAIN INFO
     "env" : "RobotWorldEnv",    #Options: RobotWorldEnv
     "algo" : "PPO",             #Options: PPO, DDPG, SAC, TD3
-    "total_timesteps" : 1_200_000, #timesteps of WHOLE training
+    "timesteps_per_env" : 100_000, #timesteps of steps per env, should be multiples of "eval_freq"
     #"n_train_envs" : 11,       #normally is adjusted to "PC" variable
     
     "model_kwargs": {
