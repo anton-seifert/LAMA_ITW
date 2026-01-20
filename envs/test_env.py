@@ -129,9 +129,10 @@ class RobotWorldEnv(gym.Env):
         # Randomly place target, ensuring it's different from tcp pos
         self.target_pos = self.calculate_target_for_sphere()
         tcp_pos = self.data.site("tcp").xpos
-        distance = np.linalg.norm(tcp_pos - 2*self.target_pos)
+        distance = np.linalg.norm(tcp_pos - self.target_pos)
         #if tcp pos and target are too close, look for new target
-        while (distance <= self.goal_distance):
+        while (distance <= 2*self.goal_distance):
+            #print("calc new target")
             self.target_pos = self.calculate_target_for_sphere()
             distance = np.linalg.norm(tcp_pos - self.target_pos)
 
@@ -214,11 +215,11 @@ class RobotWorldEnv(gym.Env):
         geoms = self.model.geom_size
         lenghts = [np.max(geom) for geom in geoms]
         max_range = sum(lenghts)
-        phi = self.np_random.uniform(low=0, high= 2*np.pi, size=1)
-        theta = self.np_random.uniform(low=0, high= np.pi/2, size=1)
+        phi = self.np_random.uniform(low=0, high= 2*np.pi)
+        theta = self.np_random.uniform(low=0, high= np.pi/2)
         #HACK: theta set to 90° for planar z = 0, max radius is set to fixed value
         theta = np.pi/2 
-        radius = self.np_random.uniform(low=0.1, high= 0.55, size=1)
+        radius = self.np_random.uniform(low=0.1, high= 0.55)
         x = radius*np.sin(theta)*np.cos(phi)
         y = radius*np.sin(theta)*np.sin(phi)
         z = 0 #radius*np.cos(theta)
