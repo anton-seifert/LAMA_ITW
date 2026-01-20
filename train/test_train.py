@@ -38,7 +38,6 @@ def train(config: Optional[dict] = None):
     #variablen mit config.get() holen
     # first value is key in settings dict, secodn is fallback default value
     env = config.get("env", "RobotWorldEnv")
-    env_kwargs = ... #brauch man glaub net
     vec_env_cls = ... #was bist du?
     device = config.get("device", "cpu")
     verbose = ...#was bist du?
@@ -74,13 +73,13 @@ def train(config: Optional[dict] = None):
 
     print(f"\ncreating {n_train_envs} TRAIN envs:")
     vec_train_env = make_vec_env(Env_Class, seed = seed,n_envs = n_train_envs, env_kwargs={"config":config},vec_env_cls=SubprocVecEnv, monitor_dir=f"./monitor_logs/{algo}_training/logs_train_{timestamp}")
-   # vec_train_env = VecMonitor(vec_train_env, filename=f"./monitor_logs/logs_train{timestamp}")    # is_sucessfull, usw. noch hinzufügen  , info_keywords=("distance") 
+    #TODO: add additional infos
+    #vec_train_env = VecMonitor(vec_train_env, filename=f"./monitor_logs/logs_train{timestamp}")    # is_sucessfull, usw. noch hinzufügen  , info_keywords=("distance") 
     vec_train_env = VecNormalize(vec_train_env , norm_obs=True, norm_reward=True)
    
 
     eval_callback = EvalCallback(vec_check_env, best_model_save_path=f"models/{algo}_training/best_models/best_model_{timestamp}", eval_freq=eval_freq, deterministic=True, render=False)
-
-    #TODO: also start algorithm with the config and change parameters of algorithm object
+    #Creating Model
     model = Algo_Class("MultiInputPolicy" ,**hyperparams, env = vec_train_env, device= device, tensorboard_log=f"./tensorboard/{algo}_training/tensorboard_{timestamp}", verbose=0)
 
     model.learn(total_timesteps= total_timesteps, callback=eval_callback, progress_bar=True)

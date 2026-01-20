@@ -41,7 +41,7 @@ Settings = {
     
     # Architektur anpassen
     "policy_kwargs": {
-        "net_arch": [256, 256], # Breiteres Netz lernt komplexe Physik besser
+        "net_arch": [256, 256], # Bigget NN for complex physics
         #"activation_fn": "torch.nn.Tanh" # Tanh ist oft besser für Continuous Control als ReLU
             }
     },
