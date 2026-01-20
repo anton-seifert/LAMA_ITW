@@ -2,7 +2,7 @@ from typing import Optional
 
 #import subscripts
 
-from train import render
+from train.render import render
 
 def main(config: Optional[dict] = None):
 
@@ -36,7 +36,7 @@ def main(config: Optional[dict] = None):
     #TODO: hier test run zu evaluation
 
     #RENDER Model
-    #render(config)
+    render(config)
 
 
 
