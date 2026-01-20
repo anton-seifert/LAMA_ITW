@@ -4,11 +4,18 @@ import os
 import sys
 import time
 from typing import Optional
+from gymnasium.wrappers import RecordVideo
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.vec_env import VecVideoRecorder, DummyVecEnv
+
+
+
 #Add parent directory to sys.path to resolve cross-directory imports from sibling packages
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 from envs.test_env import RobotWorldEnv
+
 
 
 ALGO_MAP = {
@@ -23,57 +30,80 @@ ENV_MAP = {
 }
 
 
-def render(config : Optional[dict] = None, robot_model_path: Optional[str] = None, trained_model_path: Optional[str] = None):
-    print("\nRENDERING...")
-    # Read from Config file
+def render(config: Optional[dict] = None, 
+           robot_model_path: Optional[str] = None, 
+           trained_model_path: Optional[str] = None, 
+           render_mode: Optional[str] = None): # 'human' oder 'video'
+
+    # --- 1. Konfiguration laden ---
     environment = config.get("env")
     algo = config.get("algo")
     timestamp = config.get("timestamp")
     
-    if(trained_model_path == None):
+    # Priority: Funktions-Argument > Config-Datei > Default
+    if render_mode is None:
+        render_mode = config.get("render_mode", "human")
+
+    if trained_model_path is None:
         trained_model_path = f"models/{algo}_training/best_models/best_model_{timestamp}/best_model.zip"
 
     Env_Class = ENV_MAP[environment]
     Algo_Class = ALGO_MAP[algo]
 
+    
+    # Standard-Werte für "Human"
+    env_render_mode = "human"  # Das, was wir an die Klasse übergeben
+    use_video_wrapper = False
+    sleep_time = 0.01          # Damit man im Viewer was erkennt (ca. 60-100 FPS)
 
-    # 1. Environment mit 'human' Modus erstellen
-    env = Env_Class(config= config, render_mode="human")
+    # Anpassung für "Video"
+    if render_mode == "video":
+        print("Modus: VIDEO-AUFNAHME (Headless)")
+        env_render_mode = "rgb_array" # Wichtig für den Wrapper!
+        use_video_wrapper = True
+        sleep_time = 0                # Video soll so schnell wie möglich rendern
+    else:
+        print("Modus: LIVE VIEWER")
 
-    # 2. Modell laden
-    model = Algo_Class.load(trained_model_path, device= "cpu")
+    # --- 3. Environment erstellen ---
+    # Wir nutzen hier die Variable env_render_mode (entweder 'human' oder 'rgb_array')
+    env = Env_Class(config=config, render_mode=env_render_mode)
 
-    # 3. Der Loop
+    # Falls Video gewünscht -> Wrapper drumwickeln
+    if use_video_wrapper:
+        video_folder = f"videos/{algo}_{timestamp}"
+        os.makedirs(video_folder, exist_ok=True)
+        
+        env = RecordVideo(
+            env, 
+            video_folder=video_folder,
+            name_prefix="render_video",
+            episode_trigger=lambda x: True # Jede Episode aufnehmen
+        )
+
+    # --- 4. Modell laden & Loop ---
+    model = Algo_Class.load(trained_model_path, device="cpu")
+    
     obs, _ = env.reset()
     done = False
 
     while not done:
-        # Das Modell fragen, was zu tun ist (deterministic=True macht es stabiler)
         action, _ = model.predict(obs, deterministic=True)
         
-        # Schritt ausführen (Rendering passiert automatisch in deinem step(), 
-        # wenn du meinen Code von vorhin genutzt hast)
         obs, reward, terminated, truncated, info = env.step(action)
-        
-        # Beenden wenn fertig
         done = terminated or truncated
-
-        if done:
-            print(f"tcp: {info["tcp"]}")
-            print(f"target: {info["target"]}")
-            print(f"distance: {info["distance"]}")
-            print(f"engergy: {info["energy"]}")
-            print(f"steps passed: {info["steps_passed"]}")
-            print(f"terminated: {terminated}")
-            print(f"truncated: {truncated}")
         
-        # Optional: Ein bisschen warten, falls es zu schnell geht
-        time.sleep(0.001)
+        # --- 5. Dynamisches Warten ---
+        if sleep_time > 0:
+            time.sleep(sleep_time)
 
-    time.sleep(10)
+    # WICHTIG: Environment schließen (speichert das Video final ab)
     env.close()
+    
+    if use_video_wrapper:
+        print(f"Video gespeichert in: {os.path.abspath(video_folder)}")
 
 if __name__ == "__main__":
     from configurations.config_test import Settings as config_dict
-
-    render(config= config_dict, trained_model_path="models/PPO_training/best_models/best_model_20260120-114459/best_model.zip")
+    #render_mode human für mujoco viever, "video" for video
+    render(config= config_dict, trained_model_path="models/PPO_training/best_models/best_model_20260120-215607/best_model.zip", render_mode= "video")

@@ -230,6 +230,21 @@ class RobotWorldEnv(gym.Env):
     
     def render(self):
         """Full chatty, keine ahnung was hier passiert"""
+        #------
+        # diesen code block nach unten verschieben, wenn man das target immer in der gleichen stelle haben will
+
+        # visalize target with movable body named target
+        body_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, "target")
+        if body_id != -1:
+            # Die Mocap-ID holen (Mapping von Body -> Mocap)
+            mocap_id = self.model.body_mocapid[body_id]
+
+        if mocap_id != -1:
+            self.data.mocap_pos[mocap_id] = self.target_pos 
+            # update kinematics
+            mujoco.mj_forward(self.model, self.data) 
+        #---------------
+
         # Minimaler Render-Code für gym.Env
         if self.render_mode == "rgb_array":
             return self._get_rgb_array()
@@ -241,14 +256,32 @@ class RobotWorldEnv(gym.Env):
             
             self.viewer.sync()
             
-            # visalize target with movable body named target
-            body_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, "target")
+        
 
-            if body_id != -1:
-                # Die Mocap-ID holen (Mapping von Body -> Mocap)
-                mocap_id = self.model.body_mocapid[body_id]
+        
 
-            if mocap_id != -1:
-                self.data.mocap_pos[mocap_id] = self.target_pos 
-                # update kinematics
-                mujoco.mj_forward(self.model, self.data) 
+    def _get_rgb_array(self):
+        """ Full Chatty, keine Ahnung was hier geht"""
+    # Renderer wird nur beim ersten Aufruf erstellt (Lazy Loading)
+        if not hasattr(self, 'renderer'):
+        # WICHTIG: width/height bestimmen die Video-Auflösung
+            self.renderer = mujoco.Renderer(self.model, height=480, width=640)
+    
+    # Die aktuelle Physik-Szene in den Renderer laden
+        self.renderer.update_scene(self.data) 
+    # Falls du eine bestimmte Kamera hast: update_scene(self.data, camera="kamera_name")
+    
+    # Das Bild als Numpy-Array zurückgeben
+        return self.renderer.render()
+    
+
+    """fully chatty"""
+    def close(self):
+    # Renderer löschen, falls er existiert
+        if hasattr(self, 'renderer'):
+            del self.renderer
+    
+    # Viewer schließen (hast du wahrscheinlich schon)
+        if self.viewer is not None:
+            self.viewer.close()
+        super().close()
