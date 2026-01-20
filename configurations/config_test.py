@@ -9,7 +9,7 @@ if value is set to None, the standard value will be choosen
 Settings = {
 
     #GENERAL INFO
-    
+    "PC" : "An", #Options: An, Ar, IT
     "robot_model_path": "assets/test_robot.xml",
     "render_mode": "human",
     "seed" : 42,
@@ -27,8 +27,9 @@ Settings = {
     #TRAIN INFO
     "env" : "RobotWorldEnv",    #Options: RobotWorldEnv
     "algo" : "PPO",             #Options: PPO, DDPG, SAC, TD3
-    "total_timesteps" : 120_000, #timesteps of WHOLE training
-
+    "total_timesteps" : 1_200_000, #timesteps of WHOLE training
+    #"n_train_envs" : 11,       #normally is adjusted to "PC" variable
+    
     "model_kwargs": {
     "learning_rate": 3e-4,     # Standard(3e-4)often is good enough
     "n_steps": 2048,           # after n_steps the policy is updated
@@ -46,10 +47,10 @@ Settings = {
             }
     },
 
-    
+    #EVAL
     "eval_freq" : 5000,
-    "n_check_envs": 16,
-    "n_train_envs" : 8,
+    "n_check_envs": 5,
+    "n_eval_episodes" : 25, #episodes passed in eval, should be multiple of check_envs
 
     #SCORE
     "score": None,
