@@ -1,4 +1,5 @@
 from envs.test_env import RobotWorldEnv
+import time
 
 """
 file to define als the parameters for a training run
@@ -10,15 +11,13 @@ Settings = {
     #GENERAL INFO
     
     "robot_model_path": "assets/test_robot.xml",
-    "trained_model_path": "lalal",
-    "trained_model_name": "lalal",
     "render_mode": "human",
     "seed" : 42,
     "device" : "cpu",
 
     #ENV INFO
     "goal_distance" : 0.1,
-    "max steps": 1_000,
+    "max_steps": 3_000,
 
     "distance_reward" : 20,
     "energy_reward" : 0.2,
@@ -26,11 +25,21 @@ Settings = {
     
 
     #TRAIN INFO
-    "env" : RobotWorldEnv,
-    "total_timesteps" : 100_000, #timesteps of WHOLE training
+    "env" : RobotWorldEnv, #sowas sollte eig als string eingeben werden und dann in den anderen scripten gemapped
+    "algo" : "PPO",
+    "total_timesteps" : 10_000_000, #timesteps of WHOLE training
+
+    #TODO: currently not included
     "n_step" : 10_000, #after n_steps the policy is updated
     "eval_freq" : 5000,
+    "n_check_envs": ...,
+    "n_train_envs" : ...,
 
     #SCORE
-    "score": None
+    "score": None,
+
+    #Always the same
+    "timestamp": time.strftime("%Y%m%d-%H%M%S")
+
+    
 }
