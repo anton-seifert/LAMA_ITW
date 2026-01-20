@@ -18,3 +18,6 @@ tensorboard/
 monitor_logs/
 models/ppo_training/models_vecnorm/
 models/ppo_training/models/
+
+models/PPO_training/models_vecnorm/
+models/PPO_training/models/
