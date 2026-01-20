@@ -15,14 +15,10 @@ class RobotWorldEnv(gym.Env):
         model_path = config.get("robot_model_path")
         self.goal_distance = config.get("goal_distance", 0.1)
         self.max_steps = config.get("max_steps", 1_000)
-        self.seed = config.get("seed")
-        self.distance_reward_factor = config.get("distance_reward")
-        self.energy_reward_factor = config.get("energy_reward")
-        self.goal_reward_factor = config.get("goal_reward")
-        print(self.distance_reward_factor)
-        print(self.energy_reward_factor)
-        print(self.goal_reward_factor)
-        print(model_path)
+        self.distance_reward_factor = config.get("distance_reward", 20)
+        self.energy_reward_factor = config.get("energy_reward", 0.2)
+        self.goal_reward_factor = config.get("goal_reward", 50)
+        
 
         #load model from Path
         self.model = mujoco.MjModel.from_xml_path(model_path)
@@ -113,7 +109,7 @@ class RobotWorldEnv(gym.Env):
             tuple: (observation, info) for the initial state
         """
         # IMPORTANT: Must call this first to seed the random number generator
-        super().reset(seed=self.seed)
+        super().reset(seed=seed)
 
         self.steps_passed = 0
 

@@ -3,15 +3,27 @@ from stable_baselines3 import PPO # change to right policy
 import os
 import sys
 import time
+from typing import Optional
 #Add parent directory to sys.path to resolve cross-directory imports from sibling packages
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 from envs.test_env import RobotWorldEnv
-def render(robot_model_path: str, trained_model_path: str):
+
+def render(config : Optional[dict] = None, robot_model_path: Optional[str] = None, trained_model_path: Optional[str] = None):
+    # Read from Config file
+    evnironment = config.get("env")
+    algo = config.get("algo")
+    timestamp = config.get("timestamp")
+    
+    if(trained_model_path == None):
+        trained_model_path = f"models/{algo}_training/best_models/best_model_{timestamp}/best_model.zip"
+
+
     # 1. Environment mit 'human' Modus erstellen
-    env = RobotWorldEnv(model_path=robot_model_path, render_mode="human")
+    #TODO: Env mappen über string
+    env = evnironment(config= config, render_mode="human")
 
     # 2. Modell laden
     model = PPO.load(trained_model_path, device= "cpu")
@@ -32,9 +44,12 @@ def render(robot_model_path: str, trained_model_path: str):
         done = terminated or truncated
         
         # Optional: Ein bisschen warten, falls es zu schnell geht
-        # time.sleep(0.01)
+        time.sleep(0.001)
+
     time.sleep(10)
     env.close()
 
 if __name__ == "__main__":
-    render(robot_model_path="assets/test_robot.xml", trained_model_path="models/ppo_training/best_models/best_model_20260119-000937/best_model.zip")
+    from configurations.config_test import Settings as config_dict
+
+    render(config= config_dict, trained_model_path="models/PPO_training/best_models/best_model_20260120-011810/best_model.zip")
