@@ -33,6 +33,14 @@ ENV_MAP = {
     "RobotWorldEnv" : RobotWorldEnv
 }
 
+#Maps the number of train_envs to PC
+N_ENV_MAP = {
+    "An" : 11,  
+    "Ar": 15,
+    "IT" :11
+}
+
+
 def train(config: Optional[dict] = None):
 
     #variablen mit config.get() holen
@@ -46,14 +54,16 @@ def train(config: Optional[dict] = None):
     eval_freq = config.get("eval_freq", 5555)
     timestamp = config.get("timestamp", 000000000)
     algo = config.get("algo")
-    n_check_envs = config.get("n_check_envs", 8)
-    n_train_envs = config.get("n_train_envs", 8)
+    n_check_envs = config.get("n_check_envs", 5)
     hyperparams = config.get("model_kwargs")
+    n_eval_episodes = config.get("n_eval_episodes", 20)
+    pc = config.get("PC", "An")
 
 
-    #Mapping Algorithm from String
+    #Mapping Variables from String
     Algo_Class : Type[BaseAlgorithm] = ALGO_MAP[algo]
     Env_Class = ENV_MAP[env]
+    n_train_envs = N_ENV_MAP[pc]
 
     #modelpath = os.path.join(folder_name, file_name)
     #timestamp = time.strftime("%Y%m%d-%H%M%S")
@@ -78,7 +88,7 @@ def train(config: Optional[dict] = None):
     vec_train_env = VecNormalize(vec_train_env , norm_obs=True, norm_reward=True)
    
 
-    eval_callback = EvalCallback(vec_check_env, best_model_save_path=f"models/{algo}_training/best_models/best_model_{timestamp}", eval_freq=eval_freq, deterministic=True, render=False)
+    eval_callback = EvalCallback(vec_check_env, best_model_save_path=f"models/{algo}_training/best_models/best_model_{timestamp}", eval_freq=eval_freq, n_eval_episodes = n_eval_episodes, deterministic=True, render=False)
     #Creating Model
     model = Algo_Class("MultiInputPolicy" ,**hyperparams, env = vec_train_env, device= device, tensorboard_log=f"./tensorboard/{algo}_training/tensorboard_{timestamp}", verbose=0)
 
