@@ -92,7 +92,16 @@ def render(config: Optional[dict] = None,
         
         obs, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
-        
+
+        if done:
+            print(f"tcp: {info["tcp"]}")
+            print(f"target: {info["target"]}")
+            print(f"distance: {info["distance"]}")
+            print(f"engergy: {info["energy"]}")
+            print(f"steps passed: {info["steps_passed"]}")
+            print(f"terminated: {terminated}")
+            print(f"truncated: {truncated}")
+
         # --- 5. Dynamisches Warten ---
         if sleep_time > 0:
             time.sleep(sleep_time)
@@ -106,4 +115,4 @@ def render(config: Optional[dict] = None,
 if __name__ == "__main__":
     from configurations.config_test import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-    render(config= config_dict, trained_model_path="models/PPO_training/best_models/best_model_20260120-215607/best_model.zip", render_mode= "video")
+    render(config= config_dict, trained_model_path="models/PPO_training/best_models/best_model_20260121-154054/best_model.zip", render_mode= "human")
