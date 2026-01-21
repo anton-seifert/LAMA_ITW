@@ -82,3 +82,28 @@ ZUM EVALUIEREN!!!! UND TRANIEREN
 - Wichtige Metriken: 
 Average Cumulative Reward (Return), Success Rate, Sample Efficiency
 -> SB3 Monitor benutzen, teilweise müssen wir dazu noch was in die Env implementieren
+
+
+
+
+TODO:
+
+Seed rasunehmen!
+
+
+check_env auf eine reduzieren
+
+weitere rewards fct 
+
+customcallback fct 
+
+gute episoden speichern 
+
+Episoden length nachschauen 
+
+env bulletproof
+
+hard terminated sachen 
+
+rendern methode vibe code check
+
