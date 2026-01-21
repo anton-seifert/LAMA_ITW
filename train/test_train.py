@@ -5,6 +5,8 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnNoModelImprovement
 from stable_baselines3.common.base_class import BaseAlgorithm
 from typing import Optional, Type
+import wandb
+from wandb.integration.sb3 import WandbCallback
 
 import os
 import sys
@@ -65,6 +67,14 @@ def train(config: Optional[dict] = None):
 
     total_timesteps = timesteps_per_env*n_train_envs
 
+    #Init Weights and Biases
+    run = wandb.init(
+        project="Bachelor_Robot_RL", 
+        config=config, 
+        sync_tensorboard=True,
+        monitor_gym= False #true if you want to upload every video done in training 
+    )
+
     print("\ncreating CONTROL env:")
     env_control = Env_Class(config=config)
     #Checks if Costum env corresponds GymAPI  
@@ -86,15 +96,24 @@ def train(config: Optional[dict] = None):
    
 
     eval_callback = EvalCallback(vec_check_env, best_model_save_path=f"models/{algo}_training/best_models/best_model_{timestamp}", eval_freq=eval_freq, n_eval_episodes = n_eval_episodes, deterministic=True, render=False, callback_after_eval=stop_train_callback)
+    
+    wandb_callback = WandbCallback(
+        verbose=2,
+        model_save_path=None, # <-- Dont save to cloud during training only at the end
+        model_save_freq=0
+    )
     #Creating Model
     model = Algo_Class("MultiInputPolicy" ,**hyperparams, env = vec_train_env, device= device, tensorboard_log=f"./tensorboard/{algo}_training/tensorboard_{timestamp}", verbose=0)
 
-    model.learn(total_timesteps= total_timesteps, callback=eval_callback, progress_bar=True)
+    model.learn(total_timesteps= total_timesteps, callback=[eval_callback, wandb_callback], progress_bar=True)
 
     model_save_path = f"models/{algo}_training/models/model_{timestamp}"
 
     stats_save_path = f"models/{algo}_training/models_vecnorm/vecnorm_{timestamp}_vecnorm.pkl"
     
+    #Upload to WanB
+    wandb.save(f"models/{algo}_training/best_models/best_model_{timestamp}/best_model.zip", base_path=f"models/{algo}_training/best_models/best_model_{timestamp}")
+
     model.save(model_save_path)
     vec_train_env.save(stats_save_path)
 

@@ -27,3 +27,5 @@ videos/
 interisting_models/
 
 configurations/
+
+wandb/
