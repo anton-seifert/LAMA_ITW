@@ -74,6 +74,7 @@ def train(config: Optional[dict] = None):
         sync_tensorboard=True,
         monitor_gym= False #true if you want to upload every video done in training 
     )
+    wandb.save("configurations/config_test.py", base_path="configurations", policy="now")
 
     print("\ncreating CONTROL env:")
     env_control = Env_Class(config=config)
@@ -113,7 +114,6 @@ def train(config: Optional[dict] = None):
     
     #Upload to WanB
     wandb.save(f"models/{algo}_training/best_models/best_model_{timestamp}/best_model.zip", base_path=f"models/{algo}_training/best_models/best_model_{timestamp}")
-
     model.save(model_save_path)
     vec_train_env.save(stats_save_path)
 
