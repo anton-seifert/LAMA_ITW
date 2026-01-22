@@ -28,4 +28,6 @@ interisting_models/
 
 configurations/
 
+models/
+
 wandb/
