@@ -46,7 +46,8 @@ def render(config: Optional[dict] = None,
 
     if trained_model_path is None:
         trained_model_path = f"models/{algo}_training/best_models/best_model_{timestamp}/best_model.zip"
-
+    
+    print(f"running {trained_model_path}")
     Env_Class = ENV_MAP[environment]
     Algo_Class = ALGO_MAP[algo]
 
@@ -115,4 +116,4 @@ def render(config: Optional[dict] = None,
 if __name__ == "__main__":
     from configurations.config_test import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-    render(config= config_dict, trained_model_path="models/PPO_training/best_models/best_model_20260121-154054/best_model.zip", render_mode= "human")
+    render(config= config_dict, trained_model_path="models/PPO_training/best_models/best_model_20260123-115015/best_model.zip", render_mode= "human")
