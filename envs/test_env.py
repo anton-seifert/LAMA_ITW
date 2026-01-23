@@ -186,7 +186,7 @@ class RobotWorldEnv(gym.Env):
         truncated_distance = False
         if(self.steps_passed- self.info["best_distance_step"] > self.truncated_distance_steps):
             truncated_distance = True
-            terminated = True
+            truncated = True
 
 
         #doesnt accuratly calculate energy, but strongly correlates
