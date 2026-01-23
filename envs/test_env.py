@@ -19,6 +19,8 @@ class RobotWorldEnv(gym.Env):
         self.distance_reward_factor = config.get("distance_reward", 20)
         self.energy_reward_factor = config.get("energy_reward", 0.2)
         self.goal_reward_factor = config.get("goal_reward", 50)
+        self.truncated_distance_steps = config.get("truncated_distance_steps")
+        self.truncated_distance_reward_factor = config.get("trunacated_distance_reward")
         
 
         #load model from Path
@@ -136,6 +138,8 @@ class RobotWorldEnv(gym.Env):
             self.target_pos = self.calculate_target_for_sphere()
             distance = np.linalg.norm(tcp_pos - self.target_pos)
 
+        self.info["best_distance"] = distance
+        self.info["best_distance_step"] = 0
         observation = self._get_obs()
         info = self._get_info()
 
@@ -170,22 +174,33 @@ class RobotWorldEnv(gym.Env):
             terminated = True
             reached_target = True
 
-        # We don't use truncation in this simple environment
-        # (could add a step limit here if desired)
+        # Truncated after set step limit
         truncated = self.steps_passed > self.max_steps
 
+        #Updates best(smallest) distance
+        if(distance < self.info["best_distance"]):
+            self.info["best_distance"] = distance
+            self.info["best_distance_step"] = self.steps_passed
+
+        #terminates if distance didnt get smaller after set time steps
+        truncated_distance = False
+        if(self.steps_passed- self.info["best_distance_step"] > self.truncated_distance_steps):
+            truncated_distance = True
+            terminated = True
+
+
         #doesnt accuratly calculate energy, but strongly correlates
-        
         energy = np.sum(np.square(action))
 
-        self.info = {
+        self.info.update({
                     "tcp" : tcp_pos,
                     "target": self.target_pos,
                     "distance": distance,
                     "energy": energy,
                     "steps_passed": self.steps_passed,
-                    "reached_target": reached_target
-                    }
+                    "reached_target": reached_target,
+                    "truncated_distance": truncated_distance
+                    })
         
         #render if render_mode is specified, skip if none
         if self.render_mode == "human":
@@ -207,6 +222,10 @@ class RobotWorldEnv(gym.Env):
             
             #energy  
             self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"]/self.max_energy)
+
+            #punish if gets truncated beacuse of no distance improvemnts after set steps
+            if(self.info["truncated_distance"]):
+                self.rewards["truncated_distance"] = -self.truncated_distance_reward_factor
 
             if measurements["distance"] < self.goal_distance:
                 self.rewards["goal_reward"] = self.goal_reward_factor

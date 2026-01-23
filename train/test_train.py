@@ -106,7 +106,7 @@ def train(config: Optional[dict] = None):
         env_kwargs={"config":config},
         vec_env_cls=SubprocVecEnv,
         monitor_dir=f"./monitor_logs/{algo}_training/logs_train_{timestamp}",
-        monitor_kwargs= {"info_keywords": ("distance","energy","reached_target")}
+        monitor_kwargs= {"info_keywords": ("distance","energy","reached_target","truncated_distance")}
         )
     #TODO: add additional infos
     #vec_train_env = VecMonitor(vec_train_env, filename=f"./monitor_logs/logs_train{timestamp}")    # is_sucessfull, usw. noch hinzufügen  , info_keywords=("distance") 

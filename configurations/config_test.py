@@ -22,6 +22,7 @@ Settings = {
     "distance_reward" : 30,
     "energy_reward" : 20,
     "goal_reward" : 50,
+    "trunacated_distance_reward" : 100,
     
 
     #TRAIN INFO
@@ -29,6 +30,8 @@ Settings = {
     "algo" : "PPO",             #Options: PPO, DDPG, SAC, TD3
     "timesteps_per_env" : 100_000, #timesteps of steps per env, should be multiples of "eval_freq"
     #"n_train_envs" : 11,       #normally is adjusted to "PC" variable
+    "truncated_distance_steps": 100,
+
     
     "model_kwargs": {
     "learning_rate": 3e-4,     # Standard(3e-4)often is good enough
