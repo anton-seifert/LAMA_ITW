@@ -151,7 +151,7 @@ class RobotWorldEnv(gym.Env):
             tuple: (observation, reward, terminated, truncated, info)
         """
         self.steps_passed = self.steps_passed+1
-
+        terminated = False
         # Map the action to motor torque
         torque = action*self.model.actuator_ctrlrange[:,1]
 
@@ -163,8 +163,12 @@ class RobotWorldEnv(gym.Env):
         tcp_pos = self.data.site("tcp").xpos
         distance = np.linalg.norm(tcp_pos - self.target_pos)
 
+        reached_target = False
+        
         # Check if agent reached the target
-        terminated = bool(distance < self.goal_distance)
+        if (distance < self.goal_distance):
+            terminated = True
+            reached_target = True
 
         # We don't use truncation in this simple environment
         # (could add a step limit here if desired)
@@ -179,7 +183,8 @@ class RobotWorldEnv(gym.Env):
                     "target": self.target_pos,
                     "distance": distance,
                     "energy": energy,
-                    "steps_passed": self.steps_passed
+                    "steps_passed": self.steps_passed,
+                    "reached_target": reached_target
                     }
         
         #render if render_mode is specified, skip if none
