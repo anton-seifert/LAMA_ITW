@@ -133,7 +133,7 @@ class RobotWorldEnv(gym.Env):
         tcp_pos = self.data.site("tcp").xpos
         distance = np.linalg.norm(tcp_pos - self.target_pos)
         #if tcp pos and target are too close, look for new target
-        while (distance <= 2*self.goal_distance):
+        while (distance <= 5*self.goal_distance):
             #print("calc new target")
             self.target_pos = self.calculate_target_for_sphere()
             distance = np.linalg.norm(tcp_pos - self.target_pos)
