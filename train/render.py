@@ -6,7 +6,7 @@ import time
 from typing import Optional
 from gymnasium.wrappers import RecordVideo
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.vec_env import VecVideoRecorder, DummyVecEnv
+from stable_baselines3.common.vec_env import VecVideoRecorder, DummyVecEnv, VecNormalize
 
 
 
@@ -33,7 +33,8 @@ ENV_MAP = {
 def render(config: Optional[dict] = None, 
            robot_model_path: Optional[str] = None, 
            trained_model_path: Optional[str] = None, 
-           render_mode: Optional[str] = None): # 'human' oder 'video'
+           render_mode: Optional[str] = None,  # 'human' oder 'video'
+           timestamp: Optional[str] = None):
 
     # --- 1. Konfiguration laden ---
     environment = config.get("env")
@@ -47,7 +48,11 @@ def render(config: Optional[dict] = None,
     if trained_model_path is None:
         trained_model_path = f"models/{algo}_training/best_models/best_model_{timestamp}/best_model.zip"
     
+    if timestamp is None:
+        timestamp = config.get("timestamp")
+    
     print(f"running {trained_model_path}")
+    print(f"TIMESTAMP: {timestamp}")
     Env_Class = ENV_MAP[environment]
     Algo_Class = ALGO_MAP[algo]
 
@@ -67,41 +72,55 @@ def render(config: Optional[dict] = None,
         print("Modus: LIVE VIEWER")
 
     # --- 3. Environment erstellen ---
-    # Wir nutzen hier die Variable env_render_mode (entweder 'human' oder 'rgb_array')
-    env = Env_Class(config=config, render_mode=env_render_mode)
+    # make vec env with rifght env_render_mode
+    env = make_vec_env(
+    Env_Class, 
+    n_envs=1, 
+    env_kwargs={"config": config, "render_mode": env_render_mode} # render_mode ist für Video wichtig
+    )
+
+    #normalize_vec_env  
+    stats_path = f"models/{algo}_training/best_models/best_model_{timestamp}/vec_normalize.pkl"
+    if os.path.exists(stats_path):
+        print(f"Lade Normalisierungs-Stats von {stats_path}...")
+        env = VecNormalize.load(stats_path, env)
+        env.training = False     # Keine Updates der Statistik mehr (frieren)
+        env.norm_reward = False  # Wir wollen echte Rewards sehen, keine skalierten
+    else:
+        print("WARNUNG: Keine VecNormalize Stats gefunden! Roboter könnte zucken.")
 
     # Falls Video gewünscht -> Wrapper drumwickeln
     if use_video_wrapper:
         video_folder = f"videos/{algo}_{timestamp}"
-        os.makedirs(video_folder, exist_ok=True)
         
-        env = RecordVideo(
-            env, 
+        # VecVideoRecorder funktioniert anders als der Gym RecordVideo!
+        # Er braucht die Länge in Steps, nicht Episoden.
+        env = VecVideoRecorder(
+            env,
             video_folder=video_folder,
-            name_prefix="render_video",
-            episode_trigger=lambda x: True # Jede Episode aufnehmen
-        )
-
+            record_video_trigger=lambda step: step == 0, # Nimmt ab dem allerersten Step auf
+            video_length=2000, # Maximale Länge des Videos (in Steps)
+            name_prefix="render_video"
+    )
     # --- 4. Modell laden & Loop ---
-    model = Algo_Class.load(trained_model_path, device="cpu")
+    #model_path must bei vecnorm
+    model = Algo_Class.load(trained_model_path, env = env, device="cpu")
     
-    obs, _ = env.reset()
+    obs = env.reset()
     done = False
 
     while not done:
         action, _ = model.predict(obs, deterministic=True)
         
-        obs, reward, terminated, truncated, info = env.step(action)
-        done = terminated or truncated
+        obs, reward, done, info = env.step(action)
 
-        if done:
-            print(f"tcp: {info["tcp"]}")
-            print(f"target: {info["target"]}")
-            print(f"distance: {info["distance"]}")
-            print(f"engergy: {info["energy"]}")
-            print(f"steps passed: {info["steps_passed"]}")
-            print(f"terminated: {terminated}")
-            print(f"truncated: {truncated}")
+        if done[0]:
+            #info[0] weil env immer ne list an envs wieder gibt
+            print(f"tcp: {info[0]['tcp']}")           
+            print(f"target: {info[0]['target']}")
+            print(f"distance: {info[0]['distance']}")
+            print(f"energy: {info[0]['energy']}")
+            print(f"steps passed: {info[0]['steps_passed']}")
 
         # --- 5. Dynamisches Warten ---
         if sleep_time > 0:
@@ -116,4 +135,4 @@ def render(config: Optional[dict] = None,
 if __name__ == "__main__":
     from configurations.config_test import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-    render(config= config_dict, trained_model_path="models/PPO_training/best_models/best_model_20260123-115015/best_model.zip", render_mode= "human")
+    render(config= config_dict, trained_model_path="models/PPO_training/best_models/best_model_20260121-235023/best_model.zip", render_mode= "video")
