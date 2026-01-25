@@ -7,6 +7,9 @@ from stable_baselines3.common.base_class import BaseAlgorithm
 from typing import Optional, Type
 import wandb
 from wandb.integration.sb3 import WandbCallback
+from stable_baselines3.common.vec_env import VecVideoRecorder, DummyVecEnv
+from utils import AutoSaveVecNormalize
+
 
 import os
 import sys
@@ -95,9 +98,17 @@ def train(config: Optional[dict] = None):
     #TODO: ist das richtig so, dass norm_reward false ist,weil im train env ist das nicht so
     vec_check_env = VecNormalize(vec_check_env, norm_obs=True, norm_reward=False, training=False)
 
+    """vec_check_env = VecVideoRecorder(
+        vec_check_env,
+        video_folder=f"eval_videos/{timestamp}/{run_id}_eval",
+        record_video_trigger=lambda x: x == 0, # Nimmt ab dem ersten Step auf
+        video_length=1000,                     # Wie lang das Video max sein darf
+        name_prefix=f"eval-agent"
+    )"""
+
     print(f"\ncreating {n_train_envs} TRAIN envs:")
     
-    stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=3, min_evals=5)
+    stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=10 , min_evals=5)
 
     vec_train_env = make_vec_env(
         Env_Class,
@@ -111,7 +122,10 @@ def train(config: Optional[dict] = None):
     #TODO: add additional infos
     #vec_train_env = VecMonitor(vec_train_env, filename=f"./monitor_logs/logs_train{timestamp}")    # is_sucessfull, usw. noch hinzufügen  , info_keywords=("distance") 
     vec_train_env = VecNormalize(vec_train_env , norm_obs=True, norm_reward=True)
-   
+    
+    #initialize custon callback for saving vecnorm
+    vecnorm_save_path = f"models/{algo}_training/best_models/best_model_{timestamp}"
+    save_stats = AutoSaveVecNormalize(vecnorm_save_path)
 
     eval_callback = EvalCallback(
         vec_check_env,
@@ -120,7 +134,8 @@ def train(config: Optional[dict] = None):
         n_eval_episodes = n_eval_episodes,
         deterministic=True,
         render=False,
-        callback_after_eval=stop_train_callback
+        callback_after_eval=stop_train_callback,
+        callback_on_new_best= save_stats
         )
     
     wandb_callback = WandbCallback(
@@ -133,14 +148,17 @@ def train(config: Optional[dict] = None):
 
     model.learn(total_timesteps= total_timesteps, callback=[eval_callback, wandb_callback], progress_bar=True)
 
-    model_save_path = f"models/{algo}_training/models/model_{timestamp}"
+    #model_save_path = f"models/{algo}_training/models/model_{timestamp}"
 
-    stats_save_path = f"models/{algo}_training/models_vecnorm/vecnorm_{timestamp}_vecnorm.pkl"
+    #stats_save_path = f"models/{algo}_training/models_vecnorm/vecnorm_{timestamp}_vecnorm.pkl"
     
     #Upload to WanB
+    #TODO: safe best vecnorm
     wandb.save(f"models/{algo}_training/best_models/best_model_{timestamp}/best_model.zip", base_path=f"models/{algo}_training/best_models/best_model_{timestamp}")
-    model.save(model_save_path)
-    vec_train_env.save(stats_save_path)
+    wandb.save(f"models/{algo}_training/best_models/best_model_{timestamp}/vec_normalize.pkl", base_path=f"models/{algo}_training/best_models/best_model_{timestamp}")
+    
+    #model.save(model_save_path)
+    #vec_train_env.save(stats_save_path)
 
     vec_train_env.close()
     vec_check_env.close()
