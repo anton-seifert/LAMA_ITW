@@ -88,22 +88,24 @@ Average Cumulative Reward (Return), Success Rate, Sample Efficiency
 
 TODO:
 
-Seed rasunehmen!
-
+Seed rasunehmen! seed, ist nicht das problem, xml war bisle kaputt
 
 check_env auf eine reduzieren
 
-weitere rewards fct 
+hard terminated sachen
+   joint limits
+   no distance improvement    done
+
+weitere rewards fct
+
 
 customcallback fct 
-
-gute episoden speichern 
+   gute episoden speichern 
 
 Episoden length nachschauen 
 
 env bulletproof
 
-hard terminated sachen 
 
-rendern methode vibe code check
+rendern methode vibe code check: hier war das problem, env wurde ohne vecnorm erstellt
 
