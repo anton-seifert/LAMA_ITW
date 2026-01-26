@@ -13,7 +13,7 @@ class RobotWorldEnv(gym.Env):
         print("creating env...")
         #LOAD Variables from config
         #first value = key from dict, second value fallback default value
-        model_path = config.get("robot_model_path")
+        self.model_path = config.get("robot_model_path")
         self.goal_distance = config.get("goal_distance", 0.1)
         self.max_steps = config.get("max_steps", 1_000)
         self.distance_reward_factor = config.get("distance_reward", 20)
@@ -24,7 +24,7 @@ class RobotWorldEnv(gym.Env):
         
 
         #load model from Path
-        self.model = mujoco.MjModel.from_xml_path(model_path)
+        self.model = mujoco.MjModel.from_xml_path(self.model_path)
         self.data = mujoco.MjData(self.model)
 
         self.target_pos = np.array([1,1,1]) # just for initialition
@@ -240,13 +240,17 @@ class RobotWorldEnv(gym.Env):
         lenghts = [np.max(geom) for geom in geoms]
         max_range = sum(lenghts)
         phi = self.np_random.uniform(low=0, high= 2*np.pi)
-        theta = self.np_random.uniform(low=0, high= np.pi/2)
+        theta= 0
+        if(self.model_path == "assets/test_robot.xml"):
+            theta = np.pi/2 
+        elif(self.model == "assets/test_robot_3DOF"):
+            theta = self.np_random.uniform(low=0, high= np.pi/2)
         #HACK: theta set to 90° for planar z = 0, max radius is set to fixed value
-        theta = np.pi/2 
+        
         radius = self.np_random.uniform(low=0.1, high= 0.55)
         x = radius*np.sin(theta)*np.cos(phi)
         y = radius*np.sin(theta)*np.sin(phi)
-        z = 0 #radius*np.cos(theta)
+        z = radius*np.cos(theta)
         return np.array([x,y,z]).flatten()
     
     def get_rewards(self):
