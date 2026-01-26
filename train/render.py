@@ -39,7 +39,6 @@ def render(config: Optional[dict] = None,
     # --- 1. Konfiguration laden ---
     environment = config.get("env")
     algo = config.get("algo")
-    timestamp = config.get("timestamp")
     
     # Priority: Funktions-Argument > Config-Datei > Default
     if render_mode is None:
@@ -60,7 +59,7 @@ def render(config: Optional[dict] = None,
     # Standard-Werte für "Human"
     env_render_mode = "human"  # Das, was wir an die Klasse übergeben
     use_video_wrapper = False
-    sleep_time = 0.01          # Damit man im Viewer was erkennt (ca. 60-100 FPS)
+    sleep_time = 0.05        # Damit man im Viewer was erkennt (ca. 60-100 FPS)
 
     # Anpassung für "Video"
     if render_mode == "video":
@@ -135,4 +134,4 @@ def render(config: Optional[dict] = None,
 if __name__ == "__main__":
     from configurations.config_test import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-    render(config= config_dict, trained_model_path="models/PPO_training/best_models/best_model_20260121-235023/best_model.zip", render_mode= "video")
+    render(config= config_dict, timestamp="20260126-104013", render_mode= "humnan")
