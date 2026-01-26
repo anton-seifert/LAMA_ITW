@@ -17,11 +17,12 @@
 
         <!-- Base of the robotic arm -->
         <body name="base" pos="0 0 0">
-            <geom type="sphere" size="0.05" rgba="0.7 0.2 0.2 1" />
+            <geom type="sphere" size="0.05" rgba="0.7 0.2 0.2 0.5" />
             
             <!-- First link -->
             <body name="link1" pos="0 0 0">
                 <joint name="joint1" type="hinge" axis="0 0 1" damping ="0.4" limited="true" range="-360 360"/>
+                <joint name="joint12" type="hinge" axis="0 1 0" damping ="0.4" limited="true" range="-190 10"/>
                 <geom type="capsule" fromto="0 0 0 0.3 0 0" size="0.03" rgba="0.2 0.2 0.7 1" />
                 
                 <!-- Second link -->
@@ -42,6 +43,7 @@
         <!-- ctrlrange="-50 50" begrenzt drehmoment -->
         <!-- ctrllimited="true" aktiviert die Begrenzung -->
 	    <motor joint="joint1" ctrlrange="-5 5" ctrllimited="true"/>
+        <motor joint="joint12" ctrlrange="-10 10" ctrllimited="true"/>
 	    <motor joint="joint2" ctrlrange="-5 5" ctrllimited="true"/>
     </actuator>
     <sensor>
