@@ -41,14 +41,16 @@ def render(config: Optional[dict] = None,
     algo = config.get("algo")
     
     # Priority: Funktions-Argument > Config-Datei > Default
+    if timestamp is None:
+        timestamp = config.get("timestamp")
+
     if render_mode is None:
         render_mode = config.get("render_mode", "human")
 
     if trained_model_path is None:
         trained_model_path = f"models/{algo}_training/best_models/best_model_{timestamp}/best_model.zip"
     
-    if timestamp is None:
-        timestamp = config.get("timestamp")
+    
     
     print(f"running {trained_model_path}")
     print(f"TIMESTAMP: {timestamp}")
@@ -134,4 +136,4 @@ def render(config: Optional[dict] = None,
 if __name__ == "__main__":
     from configurations.config_test import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-    render(config= config_dict, timestamp="20260126-104013", render_mode= "humnan")
+    render(config= config_dict, timestamp="20260126-111403", render_mode= "humnan")
