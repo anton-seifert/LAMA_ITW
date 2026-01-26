@@ -1,0 +1,51 @@
+<mujoco model="2R_robotic_arm">
+    <!-- Comments by CRTL K + CRTL C -->
+
+    <!--coordinate local sorgt dafür dass children das parent coordsys benutzen und nicht das globale Koordsys'-->
+    <!-- inertiafromgeom="true" Massenträgheitsmatrix wird von mujoco anhand der geometrie berechnet -->
+    <compiler angle="degree" coordinate="local" inertiafromgeom="true"/> 
+    <option timestep="0.01" gravity="0 0 -9.81" />
+    
+    <worldbody>
+        <light pos="0 0 3" dir="0 0 -1" diffuse="1 1 1"/>
+        <geom name="floor" pos = " 0 0 -0.5" type="plane" size="2 2 0.1" rgba=".9 .9 .9 1"/>
+
+        <!-- target body for rendering -->
+        <body name="target" mocap="true" pos="0.5 0.5 0.5">
+            <geom type="sphere" size="0.05" rgba="1 0 0 1" conaffinity="0" contype="0"/>
+        </body>
+
+        <!-- Base of the robotic arm -->
+        <body name="base" pos="0 0 0">
+            <geom type="sphere" size="0.05" rgba="0.7 0.2 0.2 1" />
+            
+            <!-- First link -->
+            <body name="link1" pos="0 0 0">
+                <joint name="joint1" type="hinge" axis="0 0 1" damping ="0.4" limited="true" range="-360 360"/>
+                <geom type="capsule" fromto="0 0 0 0.3 0 0" size="0.03" rgba="0.2 0.2 0.7 1" />
+                
+                <!-- Second link -->
+                <body name="link2" pos="0.3 0 0">
+                    <joint name="joint2" type="hinge" axis="0 0 1"  damping ="0.4" limited="true" range="-150 150"/>
+                    <geom type="cylinder" fromto="0 0 0 0.3 0 0" size="0.03" rgba="0.2 0.7 0.2 1" />
+                    <!-- Tool Center Point with IMU -->
+                    <site name="tcp" pos="0.3 0 0" size="0.01" rgba="0 0 1 1"/>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+    
+    <actuator>
+	    <!-- <position joint="joint1" ctrlrange="-3.14 3.14" kp="5.0" />
+        <position joint="joint2" ctrlrange="-3.14 3.14" kp="5.0" /> -->
+
+        <!-- ctrlrange="-50 50" begrenzt drehmoment -->
+        <!-- ctrllimited="true" aktiviert die Begrenzung -->
+	    <motor joint="joint1" ctrlrange="-5 5" ctrllimited="true"/>
+	    <motor joint="joint2" ctrlrange="-5 5" ctrllimited="true"/>
+    </actuator>
+    <sensor>
+        <accelerometer name="accel" site="tcp"/>
+        <gyro name="gyro" site="tcp"/>
+  </sensor>
+</mujoco>
