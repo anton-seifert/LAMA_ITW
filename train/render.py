@@ -14,7 +14,8 @@ from stable_baselines3.common.vec_env import VecVideoRecorder, DummyVecEnv, VecN
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
-from envs.test_env import RobotWorldEnv
+from envs.test_env import RobotWorldEnv as DOF2_env
+from envs.DOF3_env import RobotWorldEnv as DOF3_env
 
 
 
@@ -26,7 +27,8 @@ ALGO_MAP = {
 }
 
 ENV_MAP = {
-    "RobotWorldEnv" : RobotWorldEnv
+    "assets/test_robot.xml" : DOF2_env,
+    "assets/test_robot_3DOF.xml" : DOF3_env
 }
 
 
@@ -37,7 +39,7 @@ def render(config: Optional[dict] = None,
            timestamp: Optional[str] = None):
 
     # --- 1. Konfiguration laden ---
-    environment = config.get("env")
+    environment = config.get("robot_model_path")
     algo = config.get("algo")
     
     # Priority: Funktions-Argument > Config-Datei > Default
@@ -128,12 +130,14 @@ def render(config: Optional[dict] = None,
             time.sleep(sleep_time)
 
     # WICHTIG: Environment schließen (speichert das Video final ab)
+    time.sleep(5)
     env.close()
     
     if use_video_wrapper:
         print(f"Video gespeichert in: {os.path.abspath(video_folder)}")
 
 if __name__ == "__main__":
-    from configurations.config_test import Settings as config_dict
+    #hier einstellen aus welcher config geladen werden solll, muss zum roboter passen #configurations.config_test oder configurations.config_3DOF
+    from configurations.config_3DOF import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-    render(config= config_dict, timestamp="20260126-111403", render_mode= "humnan")
+    render(config= config_dict, timestamp="20260127-152858", render_mode= "human")
