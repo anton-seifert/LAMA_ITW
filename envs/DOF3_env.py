@@ -10,7 +10,7 @@ from mujoco import viewer
 class RobotWorldEnv(gym.Env):
     
     def __init__(self, config: Optional[dict] = None, render_mode: Optional[str] = None, ):
-        print("creating env...")
+        print("creating 3DOF_env...")
         #LOAD Variables from config
         #first value = key from dict, second value fallback default value
         self.model_path = config.get("robot_model_path")
@@ -50,6 +50,7 @@ class RobotWorldEnv(gym.Env):
         # """
 
         number_of_agent_observations = self.model.nq + 2*self.model.nv
+        print(f"numbver of agebnt observations {number_of_agent_observations}")
         self.observation_space = gym.spaces.Dict(
             {
                 #Joint angles, joint vel, join acc   
@@ -68,7 +69,8 @@ class RobotWorldEnv(gym.Env):
 
         # Define what actions are available 
         number_of_actuaters = self.model.nu
-        self.action_space = gym.spaces.Box(low=-1, high=1, shape=(number_of_actuaters,), dtype=np.float32)   # motor drehmoment
+        print(f"number of acutuators {number_of_actuaters}")
+        self.action_space = gym.spaces.Box(low=-1, high=1, shape=(number_of_actuaters,), dtype=np.float32)   # motor drehmoment normalized
 
 
         
@@ -133,7 +135,7 @@ class RobotWorldEnv(gym.Env):
         tcp_pos = self.data.site("tcp").xpos
         distance = np.linalg.norm(tcp_pos - self.target_pos)
         #if tcp pos and target are too close, look for new target
-        while (distance <= 5*self.goal_distance):
+        while (distance <= 0.5):
             #print("calc new target")
             self.target_pos = self.calculate_target_for_sphere()
             distance = np.linalg.norm(tcp_pos - self.target_pos)
@@ -243,7 +245,7 @@ class RobotWorldEnv(gym.Env):
         theta= 0
         if(self.model_path == "assets/test_robot.xml"):
             theta = np.pi/2 
-        elif(self.model == "assets/test_robot_3DOF"):
+        elif(self.model_path == "assets/test_robot_3DOF.xml"):
             theta = self.np_random.uniform(low=0, high= np.pi/2)
         #HACK: theta set to 90° for planar z = 0, max radius is set to fixed value
         
