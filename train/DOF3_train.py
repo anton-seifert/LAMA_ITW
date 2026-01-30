@@ -39,7 +39,7 @@ ENV_MAP = {
 #Maps the number of train_envs to PC
 N_ENV_MAP = {
     "An" : 11,  
-    "Ar": 15,
+    "Ar": 30,
     "IT" :11
 }
 
@@ -84,6 +84,7 @@ def train(config: Optional[dict] = None):
     #Checks if Costum env corresponds GymAPI  
     check_env(env_control)
     env_control.close()
+    print("CONTROL env closed")
 
     print(f"\ncreating {n_check_envs} CHECK envs:")
     vec_check_env = make_vec_env(
