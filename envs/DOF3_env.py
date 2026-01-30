@@ -50,7 +50,7 @@ class RobotWorldEnv(gym.Env):
         # """
 
         number_of_agent_observations = self.model.nq + 2*self.model.nv
-        print(f"numbver of agebnt observations {number_of_agent_observations}")
+        print(f"number of agent observations {number_of_agent_observations}")
         self.observation_space = gym.spaces.Dict(
             {
                 #Joint angles, joint vel, join acc   
@@ -68,9 +68,9 @@ class RobotWorldEnv(gym.Env):
         )
 
         # Define what actions are available 
-        number_of_actuaters = self.model.nu
-        print(f"number of acutuators {number_of_actuaters}")
-        self.action_space = gym.spaces.Box(low=-1, high=1, shape=(number_of_actuaters,), dtype=np.float32)   # motor drehmoment normalized
+        number_of_actuators = self.model.nu
+        print(f"number of actuators {number_of_actuators}")
+        self.action_space = gym.spaces.Box(low=-1, high=1, shape=(number_of_actuators,), dtype=np.float32)   # motor drehmoment normalized
 
 
         
