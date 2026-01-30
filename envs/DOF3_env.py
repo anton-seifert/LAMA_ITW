@@ -20,7 +20,7 @@ class RobotWorldEnv(gym.Env):
         self.energy_reward_factor = config.get("energy_reward", 0.2)
         self.goal_reward_factor = config.get("goal_reward", 50)
         self.truncated_distance_steps = config.get("truncated_distance_steps")
-        self.truncated_distance_reward_factor = config.get("trunacated_distance_reward")
+        self.truncated_distance_reward_factor = config.get("truncated_distance_reward")
         self.duration_in_target = config.get("duration_in_target")
         self.steps_in_range_reward = config.get("in_range_reward")
         
