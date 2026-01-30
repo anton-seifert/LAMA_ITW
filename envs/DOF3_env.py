@@ -21,6 +21,8 @@ class RobotWorldEnv(gym.Env):
         self.goal_reward_factor = config.get("goal_reward", 50)
         self.truncated_distance_steps = config.get("truncated_distance_steps")
         self.truncated_distance_reward_factor = config.get("trunacated_distance_reward")
+        self.duration_in_target = config.get("duration_in_target")
+        self.steps_in_range_reward = config.get("in_range_reward")
         
 
         #load model from Path
@@ -173,8 +175,18 @@ class RobotWorldEnv(gym.Env):
         
         # Check if agent reached the target
         if (distance < self.goal_distance):
-            terminated = True
+            #only start counting steps in target range if before wansnt in range
+            if(self.info["reached_target"] == False):
+                self.info["in_target_range_step"] = self.steps_passed
             reached_target = True
+        else:
+            reached_target = False
+            self.info["in_target_range_step"] = self.steps_passed
+        
+        #terminates if tcp stayed in target range for set duration of steps
+        if((self.steps_passed - self.info["in_target_range_step"] >= self.duration_in_target) and (reached_target == True)):
+            terminated = True
+
 
         # Truncated after set step limit
         truncated = self.steps_passed > self.max_steps
@@ -201,7 +213,8 @@ class RobotWorldEnv(gym.Env):
                     "energy": energy,
                     "steps_passed": self.steps_passed,
                     "reached_target": reached_target,
-                    "truncated_distance": truncated_distance
+                    "truncated_distance": truncated_distance,
+                    "terminated" : terminated
                     })
         
         #render if render_mode is specified, skip if none
@@ -228,8 +241,11 @@ class RobotWorldEnv(gym.Env):
             #punish if gets truncated beacuse of no distance improvemnts after set steps
             if(self.info["truncated_distance"]):
                 self.rewards["truncated_distance"] = -self.truncated_distance_reward_factor
+            
+            if(measurements["distance"] < self.goal_distance):
+                self.rewards["in_range_reward"] = self.steps_in_range_reward
 
-            if measurements["distance"] < self.goal_distance:
+            if measurements["terminated"] == True:
                 self.rewards["goal_reward"] = self.goal_reward_factor
             else:
                 self.rewards["goal_reward"] = 0
