@@ -38,7 +38,7 @@ ENV_MAP = {
 
 #Maps the number of train_envs to PC
 N_ENV_MAP = {
-    "An" : 11,  
+    "An" : 20,  
     "Ar": 30,
     "IT" :11
 }
@@ -94,7 +94,7 @@ def train(config: Optional[dict] = None):
         env_kwargs={"config":config},
         vec_env_cls=DummyVecEnv,
         monitor_dir=f"./monitor_logs/{algo}_training/logs_check_{timestamp}",
-        monitor_kwargs= {"info_keywords": ("distance","energy","reached_target","truncated_distance")}
+        monitor_kwargs= {"info_keywords": ("distance","energy","reached_target","truncated_distance", "terminated")}
         )
     #TODO: ist das richtig so, dass norm_reward false ist,weil im train env ist das nicht so
     vec_check_env = VecNormalize(vec_check_env, norm_obs=True, norm_reward=False, training=False)
