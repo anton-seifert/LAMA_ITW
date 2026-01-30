@@ -124,6 +124,10 @@ def render(config: Optional[dict] = None,
             print(f"distance: {info[0]['distance']}")
             print(f"energy: {info[0]['energy']}")
             print(f"steps passed: {info[0]['steps_passed']}")
+            print(f"terminated: {info[0]['terminated']}")
+            print(f"truncated because of no distance improvement: {info[0]['truncated_distance']}")
+
+
 
         # --- 5. Dynamisches Warten ---
         if sleep_time > 0:
@@ -140,4 +144,4 @@ if __name__ == "__main__":
     #hier einstellen aus welcher config geladen werden solll, muss zum roboter passen #configurations.config_test oder configurations.config_3DOF
     from configurations.config_3DOF import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-    render(config= config_dict, timestamp="20260127-152858", render_mode= "human")
+    render(config= config_dict, timestamp="20260130-130707", render_mode= "human")
