@@ -42,9 +42,9 @@
 
         <!-- ctrlrange="-50 50" begrenzt drehmoment -->
         <!-- ctrllimited="true" aktiviert die Begrenzung -->
-	    <motor joint="joint1" ctrlrange="-5 5" ctrllimited="true"/>
+	    <motor joint="joint1" ctrlrange="-10 10" ctrllimited="true"/>
         <motor joint="joint12" ctrlrange="-10 10" ctrllimited="true"/>
-	    <motor joint="joint2" ctrlrange="-5 5" ctrllimited="true"/>
+	    <motor joint="joint2" ctrlrange="-10 10" ctrllimited="true"/>
     </actuator>
     <sensor>
         <accelerometer name="accel" site="tcp"/>
