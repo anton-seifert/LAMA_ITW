@@ -147,6 +147,9 @@ def train(config: Optional[dict] = None):
     #Creating Model
     model = Algo_Class("MultiInputPolicy" ,**hyperparams, env = vec_train_env, device= device, tensorboard_log=f"./tensorboard/{algo}_training/tensorboard_{timestamp}", verbose=0)
 
+    # Normalisieren die Beobachtungen, Evaluierung benutzt nun gleiche Werte wie Training
+    vec_check_env.obs_rms = vec_train_env.obs_rms
+
     model.learn(total_timesteps= total_timesteps, callback=[eval_callback, wandb_callback], progress_bar=True)
 
     #model_save_path = f"models/{algo}_training/models/model_{timestamp}"
