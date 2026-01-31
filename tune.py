@@ -17,7 +17,7 @@ def linear_schedule(initial_value):
 
 def objective(trial):
 
-    n_envs = 10
+    n_envs = 32
 
     # Benötigte Config damit der Spaß funktioniert
     minimal_config = {
@@ -35,7 +35,7 @@ def objective(trial):
         "in_range_reward": trial.suggest_float("in_range_reward",1,10),
     }
 
-    n_steps = trial.suggest_categorical("n_steps", [512, 1024, 2048, 4096])
+    n_steps = trial.suggest_categorical("n_steps", [1024, 2048, 4096])
     batch_size = trial.suggest_categorical("batch_size", [256, 512, 1024, 2048])
 
     # Sicherheitsprüfungen (sonst crasht SB3)
@@ -69,7 +69,7 @@ def objective(trial):
     # Netzwerkarchitektur der Policy
     net_arch = trial.suggest_categorical(
     "net_arch",
-    [(128,128), (256,256),(256, 256, 128),(512,512)]
+    [(128,128), (256,256),(256, 256, 128),(256, 256, 256),(512,512)]
     )   
 
     policy_kwargs = {
@@ -98,7 +98,7 @@ def objective(trial):
 
     eval_env = make_vec_env(
         RobotWorldEnv,
-        n_envs=1,
+        n_envs=4,
         env_kwargs={"config": minimal_config}
     )
     eval_env = VecNormalize(
@@ -156,7 +156,8 @@ if __name__ == "__main__":
     sampler = optuna.samplers.TPESampler(
         n_startup_trials=10,
         multivariate=True,
-        seed=42
+        seed=42,
+        warn_independent_sampling=False
     )
 
     # Pruner: bricht schlechte Trainings frühzeitig ab
