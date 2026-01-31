@@ -1,6 +1,6 @@
 import optuna
 import torch.nn as nn
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO,SAC,TD3
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecNormalize, SubprocVecEnv
 from stable_baselines3.common.evaluation import evaluate_policy
@@ -27,12 +27,12 @@ def objective(trial):
         "goal_distance": 0.03,
         "max_steps": 3000,
         "truncated_distance_steps": 100,
-        "distance_reward": 10,
-        "energy_reward": 0.1,
-        "goal_reward": 500,
-        "truncated_distance_reward": 500,
-        "duration_in_target": 10,
-        "in_range_reward": 10,
+        "distance_reward": trial.suggest_float("distance_reward",1.0, 50.0),
+        "energy_reward": trial.suggest_float("energy_reward", 0.0, 5.0),
+        "goal_reward": trial.suggest_float("goal_reward", 100, 500),
+        "truncated_distance_reward": trial.suggest_float("truncated_distance_reward", 100, 500),
+        "duration_in_target": trial.suggest_float("duration_in_target",1,10),
+        "in_range_reward": trial.suggest_float("in_range_reward",1,10),
     }
 
     n_steps = trial.suggest_categorical("n_steps", [512, 1024, 2048, 4096])
@@ -63,10 +63,13 @@ def objective(trial):
         "target_kl": trial.suggest_float("target_kl", 0.01, 0.1),
     }
 
+    # verschieden Algos
+    #algo = trial.suggest_categorical("algo", ["PPO", "SAC", "TD3"])
+
     # Netzwerkarchitektur der Policy
     net_arch = trial.suggest_categorical(
     "net_arch",
-    [(128,128), (256,256)]
+    [(128,128), (256,256),(256, 256, 128),(512,512)]
     )   
 
     policy_kwargs = {
