@@ -52,7 +52,7 @@ class RobotWorldEnv(gym.Env):
         # """
 
         number_of_agent_observations = self.model.nq + 2*self.model.nv
-       # print(f"number of agent observations {number_of_agent_observations}")
+        #print(f"number of agent observations {number_of_agent_observations}")
         self.observation_space = gym.spaces.Dict(
             {
                 #Joint angles, joint vel, join acc   
@@ -144,6 +144,9 @@ class RobotWorldEnv(gym.Env):
 
         self.info["best_distance"] = distance
         self.info["best_distance_step"] = 0
+        self.info["in_target_range_step"] = 0
+        self.info["reached_target"] = False
+
         observation = self._get_obs()
         info = self._get_info()
 
@@ -175,13 +178,12 @@ class RobotWorldEnv(gym.Env):
         
         # Check if agent reached the target
         if (distance < self.goal_distance):
+            reached_target = True
             #only start counting steps in target range if before wansnt in range
             if(self.info["reached_target"] == False):
                 self.info["in_target_range_step"] = self.steps_passed
-            reached_target = True
         else:
             reached_target = False
-            self.info["in_target_range_step"] = self.steps_passed
         
         #terminates if tcp stayed in target range for set duration of steps
         if((self.steps_passed - self.info["in_target_range_step"] >= self.duration_in_target) and (reached_target == True)):
@@ -198,7 +200,7 @@ class RobotWorldEnv(gym.Env):
 
         #terminates if distance didnt get smaller after set time steps
         truncated_distance = False
-        if(self.steps_passed- self.info["best_distance_step"] > self.truncated_distance_steps):
+        if((self.steps_passed - self.info["best_distance_step"] >= self.truncated_distance_steps) and (reached_target == False)):
             truncated_distance = True
             truncated = True
 
@@ -241,10 +243,16 @@ class RobotWorldEnv(gym.Env):
             #punish if gets truncated beacuse of no distance improvemnts after set steps
             if(self.info["truncated_distance"]):
                 self.rewards["truncated_distance"] = -self.truncated_distance_reward_factor
-            
-           # if(measurements["distance"] < self.goal_distance):
-            #    self.rewards["in_range_reward"] = self.steps_in_range_reward
+            else:
+                self.rewards["truncated_distance"] = 0
 
+            #reward for staying in goal space
+            if(measurements["distance"] < self.goal_distance):
+                self.rewards["in_range_reward"] = self.steps_in_range_reward
+            else:
+                self.rewards["in_range_reward"] = 0
+
+            #reward for termination    
             if measurements["terminated"] == True:
                 self.rewards["goal_reward"] = self.goal_reward_factor
             else:
