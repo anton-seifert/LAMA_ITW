@@ -5,9 +5,10 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecNormalize, SubprocVecEnv
 from stable_baselines3.common.evaluation import evaluate_policy
 
-# Deine Env direkt importieren
+
 from envs.DOF3_env import RobotWorldEnv
 
+#Anpassen der learning rate mit zunehmenden Fortschritt
 def linear_schedule(initial_value):
     def f(progress_remaining):
         return progress_remaining * initial_value
@@ -18,6 +19,7 @@ def objective(trial):
 
     n_envs = 10
 
+    # Benötigte Config damit der Spaß funktioniert
     minimal_config = {
         "robot_model_path": "assets/test_robot_3DOF.xml",
         "device": "cpu",
@@ -36,6 +38,7 @@ def objective(trial):
     n_steps = trial.suggest_categorical("n_steps", [512, 1024, 2048, 4096])
     batch_size = trial.suggest_categorical("batch_size", [256, 512, 1024, 2048])
 
+    # Sicherheitsprüfungen (sonst crasht SB3)
     if batch_size > n_steps * n_envs:
         raise optuna.exceptions.TrialPruned()
     if (n_steps * n_envs) % batch_size != 0:
@@ -43,6 +46,7 @@ def objective(trial):
 
     lr = trial.suggest_float("learning_rate", 1e-5, 3e-4, log=True)
 
+    # verschiedene Hyperparameter
     hyperparams = {
         "n_steps": n_steps,
         "batch_size": batch_size,
@@ -59,6 +63,7 @@ def objective(trial):
         "target_kl": trial.suggest_float("target_kl", 0.01, 0.1),
     }
 
+    # Netzwerkarchitektur der Policy
     net_arch = trial.suggest_categorical(
     "net_arch",
     [(128,128), (256,256)]
@@ -99,6 +104,7 @@ def objective(trial):
         norm_reward=False,
         training=False
     )
+    # Normalisieren die Beobachtungen, Evaluierung benutzt nun gleiche Werte wie Training
     eval_env.obs_rms = train_env.obs_rms
 
     total_timesteps = 100_000
@@ -107,18 +113,24 @@ def objective(trial):
 
 
     for i in range(n_evals):
+        # Tranieren in kleineren Blöcken
         model.learn(total_timesteps=eval_interval)
 
+        # Policy Evaluation
         mean_reward, std_reward = evaluate_policy(
             model,
             eval_env,
             n_eval_episodes=5,
             deterministic=True
         )
+        
+        # Kombinierter Wert aus Mean und Std, für Stabiltät, Faktor kann/sollte angepasst werden 
         score = mean_reward - 0.25 * std_reward
 
+        # Score an Optuna melden
         trial.report(score, i)
 
+        # Abrechen von schlechten Trials
         if trial.should_prune():
             train_env.close()
             eval_env.close()
@@ -137,12 +149,14 @@ if __name__ == "__main__":
     #TODO: Beste Parameterspeichern, vielleicht direkt in die COnfig laden? 
     # Dahsboard benutzten? 
 
+    # Sampler: entscheidet, welche Parameter ausprobiert werden
     sampler = optuna.samplers.TPESampler(
         n_startup_trials=10,
         multivariate=True,
         seed=42
     )
 
+    # Pruner: bricht schlechte Trainings frühzeitig ab
     pruner = optuna.pruners.MedianPruner(
         n_startup_trials=10,
         n_warmup_steps=1,
