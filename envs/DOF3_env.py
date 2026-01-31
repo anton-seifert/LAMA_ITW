@@ -52,7 +52,7 @@ class RobotWorldEnv(gym.Env):
         # """
 
         number_of_agent_observations = self.model.nq + 2*self.model.nv
-        print(f"number of agent observations {number_of_agent_observations}")
+       # print(f"number of agent observations {number_of_agent_observations}")
         self.observation_space = gym.spaces.Dict(
             {
                 #Joint angles, joint vel, join acc   
@@ -71,7 +71,7 @@ class RobotWorldEnv(gym.Env):
 
         # Define what actions are available 
         number_of_actuators = self.model.nu
-        print(f"number of actuators {number_of_actuators}")
+        #print(f"number of actuators {number_of_actuators}")
         self.action_space = gym.spaces.Box(low=-1, high=1, shape=(number_of_actuators,), dtype=np.float32)   # motor drehmoment normalized
 
 
@@ -242,8 +242,8 @@ class RobotWorldEnv(gym.Env):
             if(self.info["truncated_distance"]):
                 self.rewards["truncated_distance"] = -self.truncated_distance_reward_factor
             
-            if(measurements["distance"] < self.goal_distance):
-                self.rewards["in_range_reward"] = self.steps_in_range_reward
+           # if(measurements["distance"] < self.goal_distance):
+            #    self.rewards["in_range_reward"] = self.steps_in_range_reward
 
             if measurements["terminated"] == True:
                 self.rewards["goal_reward"] = self.goal_reward_factor
