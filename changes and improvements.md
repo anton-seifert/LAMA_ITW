@@ -27,7 +27,7 @@ energy über die acceleration berechnen
 9.
 wirkliche kinetische energy berechnen und als eval metric nehmen
 
-10.
+10. done
 results speichern in json oder so
 
 11.
