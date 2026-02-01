@@ -57,9 +57,14 @@ def train(config: Optional[dict] = None):
     timestamp = config.get("timestamp", 000000000)
     algo = config.get("algo")
     n_check_envs = config.get("n_check_envs", 5)
-    hyperparams = config.get("model_kwargs")
     n_eval_episodes = config.get("n_eval_episodes", 20)
     pc = config.get("PC", "An")
+
+    if algo == "PPO":
+        hyperparams = config.get("model_kwargs_PPO")
+    elif algo == "SAC":
+        hyperparams = config.get("model_kwargs_SAC")
+
 
     
     #Mapping Variables from String
