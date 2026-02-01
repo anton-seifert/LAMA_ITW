@@ -21,6 +21,7 @@ class RobotWorldEnv(gym.Env):
         self.goal_reward_factor = config.get("goal_reward", 50)
         self.truncated_distance_steps = config.get("truncated_distance_steps")
         self.truncated_distance_reward_factor = config.get("truncated_distance_reward")
+        self.joint_distance_reward_factor = config.get("joint_limit_reward")
         self.duration_in_target = config.get("duration_in_target")
         self.steps_in_range_reward = config.get("in_range_reward")
         
@@ -146,7 +147,7 @@ class RobotWorldEnv(gym.Env):
 
         self.info["best_distance"] = distance
         self.info["best_distance_step"] = 0
-        self.info["in_target_range_step"] = 0
+        self.entry_in_goal_space_step = 0
         self.info["reached_target"] = False
 
         observation = self._get_obs()
@@ -184,17 +185,17 @@ class RobotWorldEnv(gym.Env):
             self.steps_passed_in_goal_range_total = self.steps_passed_in_goal_range_total+1
             #only start counting steps in target range if before wansnt in range
             if(self.info["reached_target"] == False):
-                self.info["in_target_range_step"] = self.steps_passed
+                self.entry_in_goal_space_step = self.steps_passed
         else:
             reached_target = False
         
         #terminates if tcp stayed in target range for set duration of steps
-        if((self.steps_passed - self.info["in_target_range_step"] >= self.duration_in_target) and (reached_target == True)):
+        if((self.steps_passed - self.entry_in_goal_space_step >= self.duration_in_target) and (reached_target == True)):
             terminated = True
 
 
         # Truncated after set step limit
-        truncated = self.steps_passed > self.max_steps
+        truncated = self.steps_passed >= self.max_steps
 
         #Updates best(smallest) distance
         if(distance < self.info["best_distance"]):
@@ -238,8 +239,12 @@ class RobotWorldEnv(gym.Env):
     def calculate_reward(self, measurements: dict):
             self.rewards = {}
             
-            #distance worth the most 
-            self.rewards["distance_reward"] = -self.distance_reward_factor*measurements["distance"]
+            #distance scales with steps passed
+            # HACK: should scale with timesteps, better with timesteps passed without entering goal space
+            if(measurements["distance"] < self.goal_distance):
+                self.rewards["distance_reward"] = -self.distance_reward_factor*measurements["distance"]
+            else:
+                self.rewards["distance_reward"] = -self.distance_reward_factor*measurements["distance"]*self.steps_passed
             
             #energy  
             self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"]/self.max_energy)
@@ -249,6 +254,10 @@ class RobotWorldEnv(gym.Env):
                 self.rewards["truncated_distance"] = -self.truncated_distance_reward_factor
             else:
                 self.rewards["truncated_distance"] = 0
+
+            #punishment for getting close to joint limits
+            exponential_joint_distance = self.joint_distance_reward_factor*np.exp(-self.calculate_joint_limit_distance())
+            self.rewards["joint_limits"] = -np.sum(exponential_joint_distance)
 
             #reward for staying in goal space
             if(measurements["distance"] < self.goal_distance):
@@ -264,6 +273,14 @@ class RobotWorldEnv(gym.Env):
 
             reward = sum(self.rewards.values())
             return reward
+    
+    def calculate_joint_limit_distance(self):
+        joint_limits = (self.model.jnt_range) #[[low, high]]
+        joint_pos = (self.data.qpos)#[pos1,pos2,...]
+
+        joint_distance = np.min(np.abs(joint_limits-joint_pos[:,None]), axis=1)
+        return joint_distance
+
     
     def calculate_target_for_sphere(self):
         geoms = self.model.geom_size
