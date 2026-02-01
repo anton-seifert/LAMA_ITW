@@ -38,7 +38,7 @@ ENV_MAP = {
 
 #Maps the number of train_envs to PC
 N_ENV_MAP = {
-    "An" : 20,  
+    "An" : 15,  
     "Ar": 30,
     "IT" :11
 }
@@ -109,7 +109,7 @@ def train(config: Optional[dict] = None):
 
     print(f"\ncreating {n_train_envs} TRAIN envs:")
     
-    stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=10 , min_evals=5)
+    stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=20 , min_evals=5)
 
     vec_train_env = make_vec_env(
         Env_Class,
