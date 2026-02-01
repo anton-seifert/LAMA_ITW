@@ -16,4 +16,7 @@ after installing new packages, update requirements.txt with "pip freeze > requir
 
 
 Opening Robot XML in MuJoCo Viewer:
-python -m mujoco.viewer --mjcf=assets/robot_file_name_here.xml
+python -m mujoco.viewer --mjcf=assets/robot_file_name_here
+
+Opening Optuna Dashboard:
+optuna-dashboard sqlite:///optuna_tune.db
