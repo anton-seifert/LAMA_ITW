@@ -126,6 +126,8 @@ def render(config: Optional[dict] = None,
             print(f"steps passed: {info[0]['steps_passed']}")
             print(f"terminated: {info[0]['terminated']}")
             print(f"truncated because of no distance improvement: {info[0]['truncated_distance']}")
+            print(f"total_reward: {reward}")
+            print(f"steps passed in goal space: {info[0]['steps_passed_in_goal_range_total']}")
 
 
 
