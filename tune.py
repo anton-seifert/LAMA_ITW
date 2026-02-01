@@ -4,6 +4,7 @@ from stable_baselines3 import PPO,SAC,TD3
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecNormalize, SubprocVecEnv
 from stable_baselines3.common.evaluation import evaluate_policy
+from utils import custom_evaluate
 
 
 from envs.DOF3_env import RobotWorldEnv
@@ -31,7 +32,7 @@ def objective(trial):
         "energy_reward": trial.suggest_float("energy_reward", 0.0, 5.0),
         "goal_reward": trial.suggest_float("goal_reward", 100, 500),
         "truncated_distance_reward": trial.suggest_float("truncated_distance_reward", 100, 500),
-        "duration_in_target": trial.suggest_float("duration_in_target",1,10),
+        "duration_in_target": trial.suggest_float("duration_in_target",1,10), #der hier ist mir sehr sus, das ist doch von uns gegeben
         "in_range_reward": trial.suggest_float("in_range_reward",1,10),
     }
 
@@ -127,8 +128,17 @@ def objective(trial):
             deterministic=True
         )
         
+        mean_reward, success_rate, mean_duration = custom_evaluate(
+            model,
+            eval_env,
+            n_episodes=5,
+            deterministic= True
+        )
         # Kombinierter Wert aus Mean und Std, für Stabiltät, Faktor kann/sollte angepasst werden 
-        score = mean_reward - 0.25 * std_reward
+        #score = mean_reward - 0.25 * std_reward
+        
+        #score compromised of succesrate and steps passed
+        score = (success_rate*100)+(mean_duration/minimal_config["duration_in_target"])
 
         # Score an Optuna melden
         trial.report(score, i)
