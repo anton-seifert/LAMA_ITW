@@ -5,6 +5,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecNormalize, SubprocVecEnv
 from stable_baselines3.common.evaluation import evaluate_policy
 from utils import custom_evaluate
+from configurations.config_3DOF import Settings as config_dict
 
 
 from envs.DOF3_env import RobotWorldEnv
@@ -18,7 +19,7 @@ def linear_schedule(initial_value):
 
 def objective(trial):
 
-    n_envs = 16
+    n_envs = 6
 
     # Benötigte Config damit der Spaß funktioniert
     minimal_config = {
@@ -111,8 +112,8 @@ def objective(trial):
     # Normalisieren die Beobachtungen, Evaluierung benutzt nun gleiche Werte wie Training
     eval_env.obs_rms = train_env.obs_rms
 
-    total_timesteps = 500_000
-    eval_interval = 50_000
+    total_timesteps = 100_000
+    eval_interval = 20_000
     n_evals = total_timesteps // eval_interval
 
 
@@ -180,7 +181,7 @@ if __name__ == "__main__":
     )
     db = "sqlite:///optuna_tune.db"
 
-    study = optuna.create_study(direction="maximize",sampler=sampler,pruner=pruner,storage=db,study_name="PPO_3DOF_Tunen",load_if_exists=True)
-    study.optimize(objective, n_trials=10,show_progress_bar=True)
+    study = optuna.create_study(direction="maximize",sampler=sampler,pruner=pruner,storage=db,study_name=f"PPO_3DOF_Tunen_{config_dict.get('timestamp')}",load_if_exists=True)
+    study.optimize(objective, n_trials=2,show_progress_bar=True)
 
     print("Beste Parameter:", study.best_params)
