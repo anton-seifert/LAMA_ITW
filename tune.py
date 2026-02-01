@@ -178,7 +178,9 @@ if __name__ == "__main__":
         n_warmup_steps=1,
         interval_steps=1
     )
-    study = optuna.create_study(direction="maximize",sampler=sampler,pruner=pruner)
-    study.optimize(objective, n_trials=100,show_progress_bar=True)
+    db = "sqlite:///optuna_tune.db"
+
+    study = optuna.create_study(direction="maximize",sampler=sampler,pruner=pruner,storage=db,study_name="PPO_3DOF_Tunen",load_if_exists=True)
+    study.optimize(objective, n_trials=10,show_progress_bar=True)
 
     print("Beste Parameter:", study.best_params)
