@@ -31,6 +31,7 @@ class RobotWorldEnv(gym.Env):
 
         self.target_pos = np.array([1,1,1]) # just for initialition
         self.steps_passed = 0
+        self.steps_passed_in_goal_range_total = 0
         self.info = {}  #just for initaliation, later on gets filled with for tracking succes
         self.rewards = {} #might be useful for tracking later on
         self.max_energy = np.sum(np.square(self.model.actuator_ctrlrange[:,1]))
@@ -119,6 +120,7 @@ class RobotWorldEnv(gym.Env):
         super().reset(seed=seed)
 
         self.steps_passed = 0
+        self.steps_passed_in_goal_range_total = 0
 
         # start the robot in a random configuration(radnom pos and speed)
         #get joint_limits
@@ -179,6 +181,7 @@ class RobotWorldEnv(gym.Env):
         # Check if agent reached the target
         if (distance < self.goal_distance):
             reached_target = True
+            self.steps_passed_in_goal_range_total = self.steps_passed_in_goal_range_total+1
             #only start counting steps in target range if before wansnt in range
             if(self.info["reached_target"] == False):
                 self.info["in_target_range_step"] = self.steps_passed
@@ -216,7 +219,8 @@ class RobotWorldEnv(gym.Env):
                     "steps_passed": self.steps_passed,
                     "reached_target": reached_target,
                     "truncated_distance": truncated_distance,
-                    "terminated" : terminated
+                    "terminated" : terminated,
+                    "total_steps_passed_in_goal_range" :  self.steps_passed_in_goal_range_total
                     })
         
         #render if render_mode is specified, skip if none
