@@ -18,7 +18,7 @@ def linear_schedule(initial_value):
 
 def objective(trial):
 
-    n_envs = 32
+    n_envs = 16
 
     # Benötigte Config damit der Spaß funktioniert
     minimal_config = {
@@ -29,11 +29,11 @@ def objective(trial):
         "max_steps": 3000,
         "truncated_distance_steps": 100,
         "distance_reward": trial.suggest_float("distance_reward",1.0, 50.0),
-        "energy_reward": trial.suggest_float("energy_reward", 0.0, 5.0),
+        "energy_reward": trial.suggest_float("energy_reward", 0.0, 50),
         "goal_reward": trial.suggest_float("goal_reward", 100, 500),
         "truncated_distance_reward": trial.suggest_float("truncated_distance_reward", 100, 500),
-        "duration_in_target": trial.suggest_float("duration_in_target",1,10), #der hier ist mir sehr sus, das ist doch von uns gegeben
-        "in_range_reward": trial.suggest_float("in_range_reward",1,10),
+        "duration_in_target": 50,#trial.suggest_float("duration_in_target",1,50), #der hier ist mir sehr sus, das ist doch von uns gegeben
+        "in_range_reward": trial.suggest_float("in_range_reward",1,50),
     }
 
     n_steps = trial.suggest_categorical("n_steps", [1024, 2048, 4096])
@@ -111,8 +111,8 @@ def objective(trial):
     # Normalisieren die Beobachtungen, Evaluierung benutzt nun gleiche Werte wie Training
     eval_env.obs_rms = train_env.obs_rms
 
-    total_timesteps = 100_000
-    eval_interval = 20_000
+    total_timesteps = 500_000
+    eval_interval = 50_000
     n_evals = total_timesteps // eval_interval
 
 
@@ -135,11 +135,13 @@ def objective(trial):
             deterministic= True
         )
         # Kombinierter Wert aus Mean und Std, für Stabiltät, Faktor kann/sollte angepasst werden 
-        #score = mean_reward - 0.25 * std_reward
+        stabiltiy_score = mean_reward - 0.15 * std_reward
         
         #score compromised of succesrate and steps passed
-        score = (success_rate*100)+(mean_duration/minimal_config["duration_in_target"])
-
+        success_score = success_rate*1000
+        duration_score = (mean_duration/minimal_config["duration_in_target"])*50
+        
+        score = stabiltiy_score+success_score+duration_score
         # Score an Optuna melden
         trial.report(score, i)
 
