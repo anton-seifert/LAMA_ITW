@@ -1,5 +1,6 @@
 from stable_baselines3.common.callbacks import BaseCallback
 import os
+import numpy as np
 
 class AutoSaveVecNormalize(BaseCallback):
     """Speichert VecNormalize Statistiken automatisch beim Aufruf."""
@@ -17,3 +18,45 @@ class AutoSaveVecNormalize(BaseCallback):
             path = os.path.join(self.save_path, self.filename)
             self.model.get_vec_normalize_env().save(path)
         return True
+    
+
+
+
+def custom_evaluate(model, env, n_episodes=10, deterministic=True):
+    """
+    Führt Evaluierungs-Episoden aus und gibt detaillierte Metriken zurück.
+    """
+    episode_rewards = []
+    successes = []
+    duration = []
+
+    for _ in range(n_episodes):
+        obs = env.reset()
+        done = False
+        total_reward = 0
+        info = {} # Fallback
+
+        while not done:
+            action, _ = model.predict(obs, deterministic=deterministic)
+            obs, reward, done, info = env.step(action)
+            
+            # VecEnv Unpacking (Wichtig für SB3)
+            if isinstance(done, np.ndarray):
+                done = done[0]
+                info = info[0]
+                reward = reward[0]
+            
+            total_reward += reward
+
+        # Daten sammeln
+        episode_rewards.append(total_reward)
+        # ".get()" mit Default-Wert verhindert Crashs, falls Key fehlt
+        successes.append(info.get("terminated", False)) 
+        duration.append(info.get("total_steps_passed_in_goal_range", 0))
+
+    # Statistik
+    mean_reward = np.mean(episode_rewards)
+    success_rate = np.mean(successes)
+    mean_duration = np.mean(duration)
+
+    return mean_reward, success_rate, mean_duration
