@@ -2,6 +2,7 @@ absl-py==2.3.1
 ale-py==0.11.2
 alembic==1.18.3
 annotated-types==0.7.0
+bottle==0.13.4
 certifi==2026.1.4
 charset-normalizer==3.4.4
 click==8.3.1
@@ -55,8 +56,10 @@ nvidia-nvshmem-cu12==3.3.20
 nvidia-nvtx-cu12==12.8.90
 opencv-python==4.12.0.88
 optuna==4.7.0
+optuna-dashboard==0.20.0
 packaging==25.0
 pandas==2.3.3
+pi==0.1.2
 pillow==11.3.0
 platformdirs==4.5.1
 proglog==0.1.12
