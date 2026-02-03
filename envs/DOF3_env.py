@@ -249,10 +249,8 @@ class RobotWorldEnv(gym.Env):
             
             #distance scales with steps passed
             # HACK: should scale with timesteps, better with timesteps passed without entering goal space
-            if(measurements["distance"] < self.goal_distance):
-                self.rewards["distance_reward"] = -self.distance_reward_factor*measurements["distance"]
-            else:
-                self.rewards["distance_reward"] = -self.distance_reward_factor*measurements["distance"]*self.steps_passed
+            
+            self.rewards["distance_reward"] = -self.distance_reward_factor*np.log(measurements["distance"]+ 0.005)
             
             #energy  
             self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"]/self.max_energy)
