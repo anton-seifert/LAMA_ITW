@@ -68,6 +68,10 @@ class RobotWorldEnv(gym.Env):
 
                 #Target Pos
                 "target": gym.spaces.Box(low=-np.inf,high=np.inf, shape=(3,), dtype=np.float64),  # [x, y, z] coordinates
+
+                #distance between TCP and Target
+                "distance": gym.spaces.Box(low=-np.inf,high=np.inf, shape=(3,), dtype=np.float64),  # [x, y, z] coordinates
+
             }
         )
 
@@ -94,10 +98,14 @@ class RobotWorldEnv(gym.Env):
 
         tcp_pos_obs = self.data.site("tcp").xpos.copy().astype(np.float32)
 
+        distance_obs = self.target_pos-tcp_pos_obs           
+                                    
+
         return {"agent": agent_obs,
                 "sensors": sensors_obs,
                 "tcp_pos": tcp_pos_obs,
-                "target": self.target_pos}
+                "target": self.target_pos,
+                "distance" : distance_obs}
     
     def _get_info(self):
         """Compute auxiliary information for debugging.
