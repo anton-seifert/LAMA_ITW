@@ -35,7 +35,8 @@ class RobotWorldEnv(gym.Env):
         self.steps_passed_in_goal_range_total = 0
         self.info = {}  #just for initaliation, later on gets filled with for tracking succes
         self.rewards = {} #might be useful for tracking later on
-        self.max_energy = np.sum(np.square(self.model.actuator_ctrlrange[:,1]))
+        #self.max_energy = np.sum(np.square(self.model.actuator_ctrlrange[:,1]))
+        self.last_action = None
 
         self.viewer = None
         self.render_mode = render_mode
@@ -130,6 +131,7 @@ class RobotWorldEnv(gym.Env):
 
         self.steps_passed = 0
         self.steps_passed_in_goal_range_total = 0
+        self.last_action = None
 
         # start the robot in a random configuration(radnom pos and speed)
         #get joint_limits
@@ -217,8 +219,15 @@ class RobotWorldEnv(gym.Env):
             truncated = True
 
 
-        #doesnt accuratly calculate energy, but strongly correlates
-        energy = np.sum(np.square(action))
+        #calculate energy difference to last step, should lead to smooth actions
+        if self.last_action is not None:
+            energy = np.sum(np.square(self.last_action - action))
+            self.last_action = action
+
+        else:
+            energy = np.sum(np.square(action))
+            self.last_action = action
+
 
         self.info.update({
                     "tcp" : tcp_pos,
@@ -253,7 +262,8 @@ class RobotWorldEnv(gym.Env):
             self.rewards["distance_reward"] = -self.distance_reward_factor*np.log(measurements["distance"]+ 0.005)
             
             #energy  
-            self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"]/self.max_energy)
+            self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"])
+
 
             #punish if gets truncated beacuse of no distance improvemnts after set steps
             if(self.info["truncated_distance"]):
