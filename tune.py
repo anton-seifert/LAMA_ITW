@@ -1,5 +1,6 @@
 import optuna
 import torch.nn as nn
+import numpy as np
 from stable_baselines3 import PPO,SAC,TD3
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecNormalize, SubprocVecEnv
@@ -129,20 +130,21 @@ def objective(trial):
             deterministic=True
         )
         
-        mean_reward, success_rate, mean_duration = custom_evaluate(
+        mean_reward, success_rate, mean_duration, mean_distance = custom_evaluate(
             model,
             eval_env,
-            n_episodes=5,
+            n_episodes= 10,
             deterministic= True
         )
         # Kombinierter Wert aus Mean und Std, für Stabiltät, Faktor kann/sollte angepasst werden 
-        stabiltiy_score = mean_reward - 0.15 * std_reward
+        #stabiltiy_score = mean_reward - 0.15 * std_reward
         
-        #score compromised of succesrate and steps passed
-        success_score = success_rate*1000
-        duration_score = (mean_duration/minimal_config["duration_in_target"])*50
+        #calculate different scores based on their importance
+        success_score = success_rate*1000 #score between 0 and 1000
+        duration_score = (mean_duration/minimal_config["duration_in_target"])*100 #score between 0 and 100
+        distance_score = 10*np.exp(-mean_distance) #score between 0 and 10
         
-        score = stabiltiy_score+success_score+duration_score
+        score = success_score + duration_score + distance_score
         # Score an Optuna melden
         trial.report(score, i)
 

@@ -29,6 +29,7 @@ def custom_evaluate(model, env, n_episodes=10, deterministic=True):
     episode_rewards = []
     successes = []
     duration = []
+    distances = []
 
     for _ in range(n_episodes):
         obs = env.reset()
@@ -51,12 +52,14 @@ def custom_evaluate(model, env, n_episodes=10, deterministic=True):
         # Daten sammeln
         episode_rewards.append(total_reward)
         # ".get()" mit Default-Wert verhindert Crashs, falls Key fehlt
-        successes.append(info.get("terminated", False)) 
+        successes.append(info.get("stayed_in_target", False))
+        distances.append(info.get("total_distance"))
         duration.append(info.get("total_steps_passed_in_goal_range", 0))
 
     # Statistik
     mean_reward = np.mean(episode_rewards)
     success_rate = np.mean(successes)
-    mean_duration = np.mean(duration)
+    mean_duration = np.mean(duration)#
+    mean_distance = np.mean(distances)
 
-    return mean_reward, success_rate, mean_duration
+    return mean_reward, success_rate, mean_duration, mean_distance
