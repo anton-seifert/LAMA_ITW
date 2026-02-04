@@ -24,6 +24,7 @@ class RobotWorldEnv(gym.Env):
         self.joint_distance_reward_factor = config.get("joint_limit_reward")
         self.duration_in_target = config.get("duration_in_target")
         self.steps_in_range_reward = config.get("in_range_reward")
+        self.singularity_reward_factor = config.get("singularity_reward_factor")
         self.crash_reward_factor = config.get("crash_reward")
         
 
@@ -298,6 +299,8 @@ class RobotWorldEnv(gym.Env):
             #energy  
             self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"])
 
+            #singularity punishment
+            self.rewards["singularity_reward"] = -np.sum(np.square(self.data.qvel)) * self.singularity_reward_factor
 
             #punish if gets truncated beacuse of no distance improvemnts after set steps
             if(self.info["truncated_distance"]):
