@@ -295,6 +295,10 @@ class RobotWorldEnv(gym.Env):
                 self.rewards["floor_crash_reward"] = -self.crash_reward_factor
             else:
                 self.rewards["floor_crash_reward"] = 0
+
+            #punishment for getting close to floor
+            exponential_floor_distance = -self.floor_distance_reward_factor*np.exp(-self.calculate_floor_distance())
+            self.rewards["floor_distance"] = np.sum(exponential_floor_distance)
             
             #energy  
             self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"])
@@ -342,6 +346,18 @@ class RobotWorldEnv(gym.Env):
                 return True
         else:
             return False
+        
+    def calculate_floor_distance(self):
+        
+        #get z coords of ends of links
+        link1_pos = self.data.site_xpos[self.link1_id][2]
+        link2_pos = self.data.site_xpos[self.tcp_id][2]
+        #calc dist to floor for each link
+        #floor_dist_link1 = (np.abs(floor_level - link1_pos))
+        #floor_dist_link2 = (np.abs(floor_level - link2_pos))
+        #creates array of distances beteween links and floor
+        distances = np.array([np.abs(self.floor_level - link1_pos), np.abs(self.floor_level - link2_pos)])
+        return distances
 
     
     def calculate_target_for_sphere(self):
