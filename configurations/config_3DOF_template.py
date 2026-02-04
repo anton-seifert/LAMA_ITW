@@ -26,7 +26,8 @@ Settings = {
     "joint_limit_reward" : 2,
     "singularity_reward_factor" : 0, #actually punishes velocity, velocity is infinitly high in singularities
     "truncated_distance_reward" : 500,
-    "crash_reward":  500,
+    "crash_reward":  200,
+    "floor_distance_reward" : 10,
     "duration_in_target" : 50, #steps need to pass in goal area for env to terminate
 
 
