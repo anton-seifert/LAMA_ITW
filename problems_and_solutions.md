@@ -28,3 +28,11 @@ haben sehr gute modelle auf dem papier trainiert, die aber kompletter schrott wa
     hohe geschwindigkeiten punishen?
     festlegen das 20 prozent der train runs eher über der base liegen
     vllt ist es doch keine singuöarität?
+    winkel von ca 90 grad von joint 12 punishen oder gelenk nur von 0 bis 90 gehen lassen?
+    geometrie des roboters hat ihm nicht erluabt diesen punkt zu erreichen
+
+- roboter hat zu doll angst in den boden zu crashen
+    soft punishment fpr nähe zum boden?
+
+- roboter lässt sich auf joint limit ausruhen
+    punishment hoch und joint lockerer machen, dass es zum crash kommen würde
