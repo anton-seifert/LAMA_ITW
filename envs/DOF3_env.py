@@ -26,12 +26,19 @@ class RobotWorldEnv(gym.Env):
         self.steps_in_range_reward = config.get("in_range_reward")
         self.singularity_reward_factor = config.get("singularity_reward_factor")
         self.crash_reward_factor = config.get("crash_reward")
+        self.floor_distance_reward_factor = config.get("floor_distance_reward")
         
 
         #load model from Path
         self.model = mujoco.MjModel.from_xml_path(self.model_path)
         self.data = mujoco.MjData(self.model)
         self.floor_id = self.model.geom("floor").id
+        self.link1_id = self.model.site("site_link1").id
+        self.tcp_id = self.model.site("tcp").id
+        self.gyro_id = self.model.sensor("gyro").id
+        self.accel_id = self.model.sensor("accel").id
+        self.floor_level = self.model.geom_pos[self.floor_id][2]
+
 
         self.target_pos = np.array([1,1,1]) # just for initialition
         self.steps_passed = 0
@@ -97,10 +104,9 @@ class RobotWorldEnv(gym.Env):
                                     self.data.qvel.flat[:], 
                                     self.data.qacc.flat[:]]).astype(np.float32)
         
-        sensors_obs = np.concatenate([self.data.sensor("gyro").data.flat[:], 
-                                    self.data.sensor("accel").data.flat[:]]).astype(np.float32)
+        sensors_obs = np.concatenate([self.data.sensordata]).astype(np.float32)
 
-        tcp_pos_obs = self.data.site("tcp").xpos.copy().astype(np.float32)
+        tcp_pos_obs = self.data.site_xpos[self.tcp_id].copy().astype(np.float32)
 
         distance_obs = self.target_pos-tcp_pos_obs           
                                     
@@ -204,7 +210,7 @@ class RobotWorldEnv(gym.Env):
         self.data.ctrl[:] = torque
         mujoco.mj_step(self.model, self.data)
 
-        tcp_pos = self.data.site("tcp").xpos
+        tcp_pos = self.data.site_xpos[self.tcp_id]
         distance = np.linalg.norm(tcp_pos - self.target_pos)
         reached_target = False
 
@@ -214,6 +220,8 @@ class RobotWorldEnv(gym.Env):
             terminated = True
         else:
             self.info["floor_crash"] = False
+        
+
         
         # Check if agent reached the target
         if (distance < self.goal_distance):
@@ -226,7 +234,6 @@ class RobotWorldEnv(gym.Env):
             reached_target = False
         
         #terminates if tcp stayed in target range for set duration of steps
-        
         if((self.steps_passed - self.entry_in_goal_space_step >= self.duration_in_target) and (reached_target == True)):
             stayed_in_target = True
             terminated = True
@@ -313,8 +320,8 @@ class RobotWorldEnv(gym.Env):
                 self.rewards["truncated_distance"] = 0
 
             #punishment for getting close to joint limits
-            exponential_joint_distance = self.joint_distance_reward_factor*np.exp(-self.calculate_joint_limit_distance())
-            self.rewards["joint_limits"] = -np.sum(exponential_joint_distance)
+            exponential_joint_distance = -self.joint_distance_reward_factor*np.exp(-self.calculate_joint_limit_distance())
+            self.rewards["joint_limits"] = np.sum(exponential_joint_distance)
 
             #reward for staying in goal space
             if(measurements["distance"] < self.goal_distance):
