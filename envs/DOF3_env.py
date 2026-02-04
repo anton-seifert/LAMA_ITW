@@ -24,11 +24,13 @@ class RobotWorldEnv(gym.Env):
         self.joint_distance_reward_factor = config.get("joint_limit_reward")
         self.duration_in_target = config.get("duration_in_target")
         self.steps_in_range_reward = config.get("in_range_reward")
+        self.crash_reward_factor = config.get("crash_reward")
         
 
         #load model from Path
         self.model = mujoco.MjModel.from_xml_path(self.model_path)
         self.data = mujoco.MjData(self.model)
+        self.floor_id = self.model.geom("floor").id
 
         self.target_pos = np.array([1,1,1]) # just for initialition
         self.steps_passed = 0
@@ -135,14 +137,31 @@ class RobotWorldEnv(gym.Env):
 
         # start the robot in a random configuration(radnom pos and speed)
         #get joint_limits
-        joint_range_limits = self.model.jnt_range #[[low1,high1][low2,high2]]
-        random_pos = self.np_random.uniform(joint_range_limits[:,0], joint_range_limits[:,1], size=self.model.nv)
-        
-        random_vel = self.np_random.uniform(low = -1, high= 1, size= self.model.nv)
-        #write new positions to data with [:]
-        self.data.qpos[:] = random_pos
-        self.data.qvel[:] = random_vel
-        mujoco.mj_forward(self.model, self.data)
+        for i in range(100):
+            margin = np.deg2rad(46)
+            joint_range_limits = self.model.jnt_range #[[low1,high1][low2,high2]]
+            #generate reandom staring pos with margin, high-maring, low +margin
+            random_pos = self.np_random.uniform(joint_range_limits[:,0]-margin, joint_range_limits[:,1]+margin, size=self.model.nv)
+            
+            random_vel = self.np_random.uniform(low = -1, high= 1, size= self.model.nv)
+            #write new positions to data with [:]
+            self.data.qpos[:] = random_pos
+            self.data.qvel[:] = random_vel
+            mujoco.mj_forward(self.model, self.data)
+
+            #if configuration is okay, break out of for loop
+            if(self.check_floor_collision() == False):
+                break
+
+        else: #run if foor loop doesnt break
+            print("no random position found")
+            pos = np.array([0, -1.7 , 2])
+            random_vel = self.np_random.uniform(low = -1, high= 1, size= self.model.nv)
+
+            self.data.qpos[:] = pos
+            self.data.qvel[:] = random_vel
+            mujoco.mj_forward(self.model, self.data)
+
 
 
         # Randomly place target, ensuring it's different from tcp pos
@@ -186,8 +205,14 @@ class RobotWorldEnv(gym.Env):
 
         tcp_pos = self.data.site("tcp").xpos
         distance = np.linalg.norm(tcp_pos - self.target_pos)
-
         reached_target = False
+
+        #check for collision
+        if(self.check_floor_collision() == True):
+            self.info["floor_crash"] = True
+            terminated = True
+        else:
+            self.info["floor_crash"] = False
         
         # Check if agent reached the target
         if (distance < self.goal_distance):
@@ -200,9 +225,12 @@ class RobotWorldEnv(gym.Env):
             reached_target = False
         
         #terminates if tcp stayed in target range for set duration of steps
+        
         if((self.steps_passed - self.entry_in_goal_space_step >= self.duration_in_target) and (reached_target == True)):
+            stayed_in_target = True
             terminated = True
-
+        else:
+            stayed_in_target = False
 
         # Truncated after set step limit
         truncated = self.steps_passed >= self.max_steps
@@ -237,7 +265,7 @@ class RobotWorldEnv(gym.Env):
                     "steps_passed": self.steps_passed,
                     "reached_target": reached_target,
                     "truncated_distance": truncated_distance,
-                    "terminated" : terminated,
+                    "stayed_in_target" : stayed_in_target,
                     "total_steps_passed_in_goal_range" :  self.steps_passed_in_goal_range_total
                     })
         
@@ -260,6 +288,12 @@ class RobotWorldEnv(gym.Env):
             # HACK: should scale with timesteps, better with timesteps passed without entering goal space
             
             self.rewards["distance_reward"] = -self.distance_reward_factor*np.log(measurements["distance"]+ 0.005)
+
+            #crash, contact with floor
+            if(self.info["floor_crash"] == True):
+                self.rewards["floor_crash_reward"] = -self.crash_reward_factor
+            else:
+                self.rewards["floor_crash_reward"] = 0
             
             #energy  
             self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"])
@@ -282,7 +316,7 @@ class RobotWorldEnv(gym.Env):
                 self.rewards["in_range_reward"] = 0
 
             #reward for termination    
-            if measurements["terminated"] == True:
+            if measurements["stayed_in_target"] == True:
                 self.rewards["goal_reward"] = self.goal_reward_factor
             else:
                 self.rewards["goal_reward"] = 0
@@ -296,6 +330,15 @@ class RobotWorldEnv(gym.Env):
 
         joint_distance = np.min(np.abs(joint_limits-joint_pos[:,None]), axis=1)
         return joint_distance
+    
+    def check_floor_collision(self):
+        contacts = self.data.contact
+
+        for contact in contacts:
+            if contact.geom1 == self.floor_id or contact.geom2 == self.floor_id:
+                return True
+        else:
+            return False
 
     
     def calculate_target_for_sphere(self):
@@ -307,10 +350,10 @@ class RobotWorldEnv(gym.Env):
         if(self.model_path == "assets/test_robot.xml"):
             theta = np.pi/2 
         elif(self.model_path == "assets/test_robot_3DOF.xml"):
-            theta = self.np_random.uniform(low=0, high= np.pi/2)
+            theta = self.np_random.uniform(low=0.07, high= np.pi/2)
         #HACK: theta set to 90° for planar z = 0, max radius is set to fixed value
         
-        radius = self.np_random.uniform(low=0.1, high= 0.55)
+        radius = self.np_random.uniform(low=0.15, high= 0.55)
         x = radius*np.sin(theta)*np.cos(phi)
         y = radius*np.sin(theta)*np.sin(phi)
         z = radius*np.cos(theta)

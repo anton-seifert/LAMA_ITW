@@ -127,7 +127,8 @@ def render(config: Optional[dict] = None,
             print(f"truncated because of no distance improvement: {info[0]['truncated_distance']}")
             print(f"total_reward: {reward}")
             print(f"steps passed in goal space: {info[0]['total_steps_passed_in_goal_range']}")
-            print(f"terminated: {info[0]['terminated']}")
+            print(f"floor crash: {info[0]['floor_crash']}")
+            print(f"terminated: {info[0]['stayed_in_target']}")
 
 
 
@@ -136,7 +137,7 @@ def render(config: Optional[dict] = None,
             time.sleep(sleep_time)
 
     # WICHTIG: Environment schließen (speichert das Video final ab)
-    time.sleep(5)
+    time.sleep(10)
     env.close()
     
     if use_video_wrapper:
@@ -146,4 +147,4 @@ if __name__ == "__main__":
     #hier einstellen aus welcher config geladen werden solll, muss zum roboter passen #configurations.config_test oder configurations.config_3DOF
     from configurations.config_3DOF import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-    render(config= config_dict, timestamp="20260203-114141", render_mode= "human")
+    render(config= config_dict, timestamp="20260204-005825", render_mode= "human")
