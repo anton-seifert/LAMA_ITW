@@ -148,8 +148,8 @@ class RobotWorldEnv(gym.Env):
         for i in range(100):
             margin = np.deg2rad(46)
             joint_range_limits = self.model.jnt_range #[[low1,high1][low2,high2]]
-            #generate reandom staring pos with margin, high-maring, low +margin
-            random_pos = self.np_random.uniform(joint_range_limits[:,0]-margin, joint_range_limits[:,1]+margin, size=self.model.nv)
+            #generate reandom staring pos with margin, low +margin, high-margin 
+            random_pos = self.np_random.uniform(low = joint_range_limits[:,0]+margin, high=joint_range_limits[:,1]-margin, size=self.model.nq)
             
             random_vel = self.np_random.uniform(low = -1, high= 1, size= self.model.nv)
             #write new positions to data with [:]
