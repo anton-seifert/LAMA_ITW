@@ -1,6 +1,6 @@
 from envs.test_env import RobotWorldEnv
 import time
-
+import numpy as nn
 """
 file to define als the parameters for a training run
 if value is set to None, the standard value will be choosen
@@ -54,6 +54,35 @@ Settings = {
         "net_arch": [512, 512], # Bigget NN for complex physics
         #"activation_fn": "torch.nn.Tanh" # Tanh ist oft besser für Continuous Control als ReLU
             }
+    },
+    
+    "model_kwargs_SAC": {
+    "learning_rate": 3e-4,      # Standard: 3e-4 (oft sehr stabil)
+    "buffer_size": 1_000_000,   # WICHTIG: SAC speichert alte Erfahrungen. Achtung RAM-Verbrauch!
+    "batch_size": 256,          # Standard: 256
+    "tau": 0.005,               # "Soft Update" Faktor für das Target-Netzwerk
+    "gamma": 0.99,              # Discount factor
+    "learning_starts": 100,     # Warte 100 Steps, bevor das Lernen beginnt (Daten sammeln)
+    
+    # Wie oft wird gelernt?
+    "train_freq": 1,            # Update nach jedem Step (sehr rechenintensiv!)
+    "gradient_steps": 1,        # 1 Gradienten-Update pro Step
+    
+    # Entropie (die "Neugier" des Agenten)
+    # "ent_coef": "auto",       # Standard ist "auto", SAC lernt die Temperatur selbst
+
+    # Architektur anpassen
+    "policy_kwargs": {
+        # SAC nutzt zwei Netze: pi (Actor) und qf (Critic/Q-Function)
+        # Standard ist bei SAC größer als bei PPO: [256, 256]
+        "net_arch": dict(pi=[256, 256], qf=[256, 256]), 
+        
+        "activation_fn": nn.ReLU, # SAC nutzt standardmäßig ReLU (PPO oft Tanh)
+        
+        # Optional: State Dependent Exploration (gSDE)
+        # Sehr stark für MuJoCo Roboter, macht Bewegungen flüssiger
+        # "use_sde": False, 
+    }
     },
 
     #EVAL
