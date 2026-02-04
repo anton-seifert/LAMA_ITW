@@ -130,7 +130,7 @@ def objective(trial):
             deterministic=True
         )
         
-        mean_reward, success_rate, mean_duration, mean_distance = custom_evaluate(
+        mean_reward, success_rate, mean_duration, mean_distance, std_distance= custom_evaluate(
             model,
             eval_env,
             n_episodes= 10,
@@ -142,7 +142,7 @@ def objective(trial):
         #calculate different scores based on their importance
         success_score = success_rate*1000 #score between 0 and 1000
         duration_score = (mean_duration/minimal_config["duration_in_target"])*100 #score between 0 and 100
-        distance_score = 10*np.exp(-mean_distance) #score between 0 and 10
+        distance_score = 10*np.exp(-(mean_distance +0.25*std_distance)) #score between 0 and 10
         
         score = success_score + duration_score + distance_score
         # Score an Optuna melden

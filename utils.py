@@ -59,7 +59,8 @@ def custom_evaluate(model, env, n_episodes=10, deterministic=True):
     # Statistik
     mean_reward = np.mean(episode_rewards)
     success_rate = np.mean(successes)
-    mean_duration = np.mean(duration)#
+    mean_duration = np.mean(duration)
     mean_distance = np.mean(distances)
+    std_distance = np.std(distances)
 
-    return mean_reward, success_rate, mean_duration, mean_distance
+    return mean_reward, success_rate, mean_duration, mean_distance, std_distance
