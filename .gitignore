@@ -26,8 +26,11 @@ videos/
 
 interisting_models/
 
-configurations/
 
 models/
 
 wandb/
+
+configurations/config_3DOF.py
+
+configurations/config_test.py
