@@ -23,15 +23,18 @@ Settings = {
     "energy_reward" : 1, #in gymnaisum typically one thenth of distance_reward
     "in_range_reward" : 50,
     "goal_reward" : 5000,
+    "joint_limit_reward" : 2,
+    "singularity_reward_factor" : 0, #actually punishes velocity, velocity is infinitly high in singularities
     "truncated_distance_reward" : 500,
+    "crash_reward":  500,
     "duration_in_target" : 50, #steps need to pass in goal area for env to terminate
 
 
     #TRAIN INFO
-    "env" : "RobotWorldEnv",    #Options: RobotWorldEnv
-    "algo" : "SAC",             #Options: PPO, DDPG, SAC, TD3
-    "timesteps_per_env" : 1_00_000, #timesteps of steps per env, should be multiples of "eval_freq"
-    #"n_train_envs" : 11,       #normally is adjusted to "PC" variable
+    "env" : "RobotWorldEnv",        #Options: RobotWorldEnv
+    "algo" : "PPO",                 #Options: PPO, DDPG, SAC, TD3
+    "timesteps_per_env" : 1_000_000, #timesteps of steps per env, should be multiples of "eval_freq"
+    #"n_train_envs" : 11,           #normally is adjusted to "PC" variable
     "truncated_distance_steps": 50,
 
     
@@ -42,34 +45,20 @@ Settings = {
     #"n_epochs": 10,
     #"gamma": 0.99,
     #"gae_lambda": 0.95,
-    #"clip_range": 0.2,
-    #"ent_coef": 0.0,          # Erhöhen auf 0.001, falls er zu schnell konvergiert
-    },
-
-    "model_kwargs_SAC": {
-    "learning_rate": 0.0003,
-    "buffer_size": 1000000,
-    "learning_starts": 1000,
-    "batch_size": 256,
-    "tau": 0.005,
-    "gamma": 0.99,
-    "train_freq": 1,
-    "gradient_steps": 1,
-    "ent_coef": "auto",
-    "target_entropy": "auto"
-    },
-
+    "clip_range": 0.2,
+    #"ent_coef": 0.0,           # Erhöhen auf 0.001, falls er zu schnell konvergiert
+    
     # Architektur anpassen
     "policy_kwargs": {
-        "net_arch": [256, 256], # Bigget NN for complex physics
+        "net_arch": [512, 512], # Bigget NN for complex physics
         #"activation_fn": "torch.nn.Tanh" # Tanh ist oft besser für Continuous Control als ReLU
+            }
     },
-
 
     #EVAL
     "eval_freq" : 10_000,
     "n_check_envs": 2,
-    "n_eval_episodes" : 10, #episodes passed in eval, should be multiple of check_envs
+    "n_eval_episodes" : 20, #episodes passed in eval, should be multiple of check_envs
 
     #SCORE
     "score": None,
