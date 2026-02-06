@@ -7,6 +7,7 @@ from typing import Optional
 from gymnasium.wrappers import RecordVideo
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecVideoRecorder, DummyVecEnv, VecNormalize
+from utils import plot_live_dict
 
 
 
@@ -116,6 +117,10 @@ def render(config: Optional[dict] = None,
         action, _ = model.predict(obs, deterministic=True)
         
         obs, reward, done, info = env.step(action)
+        
+        #data_dict = env.get_rewards()
+
+        #plot_live_dict(data_dict,timestamp=timestamp)
 
         if done[0]:
             #info[0] weil env immer ne list an envs wieder gibt
@@ -147,4 +152,4 @@ if __name__ == "__main__":
     #hier einstellen aus welcher config geladen werden solll, muss zum roboter passen #configurations.config_test oder configurations.config_3DOF
     from configurations.config_3DOF import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-    render(config= config_dict, timestamp="20260204-005825", render_mode= "human")
+    render(config= config_dict, timestamp="20260206-105812", render_mode= "human")
