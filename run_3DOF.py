@@ -2,7 +2,7 @@ from typing import Optional
 
 #import subscripts
 
-from train.render import render
+from render import render
 
 def main(config: Optional[dict] = None):
 

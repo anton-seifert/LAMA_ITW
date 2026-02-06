@@ -7,8 +7,11 @@ from typing import Optional
 from gymnasium.wrappers import RecordVideo
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecVideoRecorder, DummyVecEnv, VecNormalize
-from utils import plot_live_dict
-
+from utils import collect_and_plot
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 #Add parent directory to sys.path to resolve cross-directory imports from sibling packages
@@ -112,17 +115,32 @@ def render(config: Optional[dict] = None,
     
     obs = env.reset()
     done = False
+    plot_context = {'fig': None, 'axes': None, 'lines': {}}
 
     while not done:
         action, _ = model.predict(obs, deterministic=True)
         
         obs, reward, done, info = env.step(action)
-        
-        #data_dict = env.get_rewards()
 
-        #plot_live_dict(data_dict,timestamp=timestamp)
+
+ 
+        data_dict_rewards = env.env_method("get_rewards")[0]
+        data_distance = np.linalg.norm(obs['distance'])
+
+        #qpos_only = obs['agent'][:3]
+        #print(qpos_only)
+
+        data_dict = {          
+        "Distance": data_distance,
+        #"Agent_Pos":qpos_only,
+        }
+        data_dict |= data_dict_rewards
+
+
+        collect_and_plot(data_dict, context=plot_context)
 
         if done[0]:
+
             #info[0] weil env immer ne list an envs wieder gibt
             print(f"tcp: {info[0]['tcp']}")           
             print(f"target: {info[0]['target']}")
@@ -140,7 +158,11 @@ def render(config: Optional[dict] = None,
         # --- 5. Dynamisches Warten ---
         if sleep_time > 0:
             time.sleep(sleep_time)
+    save_dir = f"models/render_infos/{timestamp}"
+    os.makedirs(save_dir, exist_ok=True)
+    save_path = f"{save_dir}/render_plot.png"
 
+    collect_and_plot({}, context=plot_context, save_path=save_path)
     # WICHTIG: Environment schließen (speichert das Video final ab)
     time.sleep(10)
     env.close()
@@ -152,4 +174,4 @@ if __name__ == "__main__":
     #hier einstellen aus welcher config geladen werden solll, muss zum roboter passen #configurations.config_test oder configurations.config_3DOF
     from configurations.config_3DOF import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-    render(config= config_dict, timestamp="20260206-105812", render_mode= "human")
+    render(config= config_dict, timestamp="20260206-185104", render_mode= "human")

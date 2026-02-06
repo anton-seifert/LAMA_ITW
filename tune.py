@@ -27,18 +27,18 @@ def objective(trial):
         "robot_model_path": "assets/test_robot_3DOF.xml",
         "device": "cpu",
         "render_mode": None,
-        "goal_distance": 0.03,
+        "goal_distance": 0.07,
         "max_steps": 3000,
         "truncated_distance_steps": 100,
-        "distance_reward": trial.suggest_int("distance_reward",1.0, 50.0),
+        "distance_reward": trial.suggest_int("distance_reward",1, 100),
         "energy_reward": trial.suggest_int("energy_reward", 0.0, 50),
-        "goal_reward": trial.suggest_int("goal_reward", 100, 500),
-        "truncated_distance_reward": trial.suggest_int("truncated_distance_reward", 100, 500),
-        "duration_in_target": trial.suggest_int("duration_in_target",10,100),#trial.suggest_float("duration_in_target",1,50), #der hier ist mir sehr sus, das ist doch von uns gegeben
-        "in_range_reward": trial.suggest_int("in_range_reward",10,100),
+        "goal_reward": trial.suggest_int("goal_reward", 1, 500),
+        "truncated_distance_reward": trial.suggest_int("truncated_distance_reward", 1, 500),
+        "duration_in_target": trial.suggest_int("duration_in_target",1,100),#trial.suggest_float("duration_in_target",1,50), #der hier ist mir sehr sus, das ist doch von uns gegeben
+        "in_range_reward": trial.suggest_int("in_range_reward",1,100),
         "joint_limit_reward" :trial.suggest_int("joint_limit_reward",1,50),#2,
         "singularity_reward_factor" : 0, #actually punishes velocity, velocity is infinitly high in singularities
-        "crash_reward": trial.suggest_int("crash_reward",10,500),
+        "crash_reward": trial.suggest_int("crash_reward",1,500),
         "floor_distance_reward" : trial.suggest_int("floor_distance_reward",1,50),#10,
     }
     """
@@ -141,7 +141,7 @@ def objective(trial):
     eval_env.obs_rms = train_env.obs_rms
 
     total_timesteps = 500_000
-    eval_interval = 50_000
+    eval_interval = 100_000
     n_evals = total_timesteps // eval_interval
 
 
@@ -203,6 +203,6 @@ if __name__ == "__main__":
     db = "sqlite:///optuna_tune.db"
 
     study = optuna.create_study(direction="maximize",sampler=sampler,pruner=pruner,storage=db,study_name=f"PPO_3DOF_Tunen_{config_dict.get('timestamp')}",load_if_exists=True)
-    study.optimize(objective, n_trials=200,show_progress_bar=True)
+    study.optimize(objective, n_trials=250,show_progress_bar=True)
 
     print("Beste Parameter:", study.best_params)
