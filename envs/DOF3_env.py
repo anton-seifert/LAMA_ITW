@@ -300,7 +300,7 @@ class RobotWorldEnv(gym.Env):
             #distance scales with steps passed
             # HACK: should scale with timesteps, better with timesteps passed without entering goal space
             
-            self.rewards["distance_reward"] = -self.distance_reward_factor*np.log(measurements["distance"]+ 0.005)
+            self.rewards["distance_reward"] = -self.distance_reward_factor*np.log(measurements["distance"])
 
             #crash, contact with floor
             if(self.info["floor_crash"] == True):
@@ -313,7 +313,7 @@ class RobotWorldEnv(gym.Env):
             self.rewards["floor_distance"] = np.sum(exponential_floor_distance)
             
             #energy  
-            self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"])
+            self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"])*np.exp(-measurements["distance"])-(measurements["energy"])-self.energy_reward_factor
 
             #singularity punishment
             self.rewards["singularity_reward"] = -np.sum(np.square(self.data.qvel)) * self.singularity_reward_factor
