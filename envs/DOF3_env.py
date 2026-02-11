@@ -173,7 +173,6 @@ class RobotWorldEnv(gym.Env):
                 self.data.qvel[:] = random_vel
                 mujoco.mj_forward(self.model, self.data)
         else:
-            print("reading from start config")
             self.data.qpos[:] = self.options["start_pos"]
             self.data.qvel[:] = self.options["start_vel"]
             mujoco.mj_forward(self.model, self.data)
@@ -201,6 +200,9 @@ class RobotWorldEnv(gym.Env):
         self.entry_in_goal_space_step = 0
         self.info["reached_target"] = False
         self.total_distance = 0
+        self.info["start_pos"] = self.data.qpos.tolist()
+        self.info["start_vel"] = self.data.qvel.tolist()
+        self.info["target"] = self.target_pos
 
         observation = self._get_obs()
         info = self._get_info()
@@ -287,7 +289,6 @@ class RobotWorldEnv(gym.Env):
 
         self.info.update({
                     "tcp" : tcp_pos,
-                    "target": self.target_pos,
                     "distance": distance,
                     "total_distance" : self.total_distance,
                     "energy": energy,
@@ -439,7 +440,6 @@ class RobotWorldEnv(gym.Env):
 
     def set_reset_options(self, options: dict):
         self.options = options
-        print("loaded start config")
             
         
 
