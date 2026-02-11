@@ -3,18 +3,24 @@ from stable_baselines3 import PPO, TD3, DDPG, SAC
 import os
 import sys
 import time
+import numpy as np
 from typing import Optional
 from gymnasium.wrappers import RecordVideo
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecVideoRecorder, DummyVecEnv, VecNormalize
-
+from utils import collect_and_plot
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 #Add parent directory to sys.path to resolve cross-directory imports from sibling packages
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
-from envs.test_env import RobotWorldEnv
+from envs.test_env import RobotWorldEnv as DOF2_env
+from envs.DOF3_env import RobotWorldEnv as DOF3_env
 
 
 
@@ -26,7 +32,8 @@ ALGO_MAP = {
 }
 
 ENV_MAP = {
-    "RobotWorldEnv" : RobotWorldEnv
+    "assets/test_robot.xml" : DOF2_env,
+    "assets/test_robot_3DOF.xml" : DOF3_env
 }
 
 
@@ -34,10 +41,12 @@ def render(config: Optional[dict] = None,
            robot_model_path: Optional[str] = None, 
            trained_model_path: Optional[str] = None, 
            render_mode: Optional[str] = None,  # 'human' oder 'video'
-           timestamp: Optional[str] = None):
+           timestamp: Optional[str] = None,
+           start_config: Optional[np.array] = None,
+           ):
 
     # --- 1. Konfiguration laden ---
-    environment = config.get("env")
+    environment = config.get("robot_model_path")
     algo = config.get("algo")
     
     # Priority: Funktions-Argument > Config-Datei > Default
@@ -106,34 +115,77 @@ def render(config: Optional[dict] = None,
     # --- 4. Modell laden & Loop ---
     #model_path must bei vecnorm
     model = Algo_Class.load(trained_model_path, env = env, device="cpu")
-    
+    env.env_method("set_reset_options", start_config)
     obs = env.reset()
     done = False
+    plot_context = {'fig': None, 'axes': None, 'lines': {}}
 
     while not done:
         action, _ = model.predict(obs, deterministic=True)
         
         obs, reward, done, info = env.step(action)
 
+ 
+        data_dict_rewards = env.env_method("get_rewards")[0]
+        data_distance = info[0]['distance']
+        #qpos_only = obs['agent'][:3]
+        #print(qpos_only)
+
+        data_dict = {          
+        "Distance": data_distance,
+        #"Agent_Pos":qpos_only,
+        "Total_Reward":reward,
+        }
+        data_dict |= data_dict_rewards
+
+
+        collect_and_plot(data_dict, context=plot_context)
+
         if done[0]:
+
             #info[0] weil env immer ne list an envs wieder gibt
-            print(f"tcp: {info[0]['tcp']}")           
-            print(f"target: {info[0]['target']}")
+            print()
+            print(f'"start_pos": {info[0]["start_pos"]},')
+            print(f'"start_vel": {info[0]["start_vel"]},')
+            print(f'"target_pos": {info[0]['target']}')
+            print()
+            print(f"tcp: {info[0]['tcp']}")     
             print(f"distance: {info[0]['distance']}")
             print(f"energy: {info[0]['energy']}")
             print(f"steps passed: {info[0]['steps_passed']}")
+            print(f"truncated because of no distance improvement: {info[0]['truncated_distance']}")
+            print(f"total_reward: {reward}")
+            print(f"steps passed in goal space: {info[0]['total_steps_passed_in_goal_range']}")
+            print(f"floor crash: {info[0]['floor_crash']}")
+            print(f"terminated: {info[0]['stayed_in_target']}")
+
+
+
 
         # --- 5. Dynamisches Warten ---
         if sleep_time > 0:
             time.sleep(sleep_time)
+    save_dir = f"models/render_infos/{timestamp}"
+    os.makedirs(save_dir, exist_ok=True)
+    save_path = f"{save_dir}/render_plot.png"
 
+    collect_and_plot({}, context=plot_context, save_path=save_path)
     # WICHTIG: Environment schließen (speichert das Video final ab)
+    time.sleep(10)
     env.close()
     
     if use_video_wrapper:
         print(f"Video gespeichert in: {os.path.abspath(video_folder)}")
 
 if __name__ == "__main__":
-    from configurations.config_test import Settings as config_dict
+    #hier einstellen aus welcher config geladen werden solll, muss zum roboter passen #configurations.config_test oder configurations.config_3DOF
+    from configurations.config_3DOF import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-    render(config= config_dict, timestamp="20260126-111403", render_mode= "humnan")
+
+    start_config = { #dummy data
+        "start_pos": [1.7, -1.7, 1.7],
+        "start_vel": [0.1, 0.1, 0.1],
+        "target_pos": [0.5, 0.5, 0.5]
+    }
+    render(config= config_dict, timestamp="20260204-162342", render_mode= "human", start_config = start_config)
+    #render(config= config_dict, timestamp="20260204-162342", render_mode= "human")
