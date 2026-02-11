@@ -313,7 +313,7 @@ class RobotWorldEnv(gym.Env):
             self.rewards["floor_distance"] = np.sum(exponential_floor_distance)
             
             #energy  
-            self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"])*10*np.exp(-measurements["distance"])-(measurements["energy"])-self.energy_reward_factor
+            self.rewards["energy_reward"] = -self.energy_reward_factor*measurements["energy"]*10*np.exp(-measurements["distance"])-(measurements["energy"]*self.energy_reward_factor)
 
             #singularity punishment
             self.rewards["singularity_reward"] = -np.sum(np.square(self.data.qvel)) * self.singularity_reward_factor

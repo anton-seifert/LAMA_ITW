@@ -122,17 +122,16 @@ def render(config: Optional[dict] = None,
         
         obs, reward, done, info = env.step(action)
 
-
  
         data_dict_rewards = env.env_method("get_rewards")[0]
-        data_distance = np.linalg.norm(obs['distance'])
-
+        data_distance = info[0]['distance']
         #qpos_only = obs['agent'][:3]
         #print(qpos_only)
 
         data_dict = {          
         "Distance": data_distance,
         #"Agent_Pos":qpos_only,
+        "Total_Reward":reward,
         }
         data_dict |= data_dict_rewards
 
@@ -174,4 +173,4 @@ if __name__ == "__main__":
     #hier einstellen aus welcher config geladen werden solll, muss zum roboter passen #configurations.config_test oder configurations.config_3DOF
     from configurations.config_3DOF import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-    render(config= config_dict, timestamp="20260206-185104", render_mode= "human")
+    render(config= config_dict, timestamp="20260207-163454", render_mode= "video")
