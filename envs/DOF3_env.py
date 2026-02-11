@@ -47,6 +47,7 @@ class RobotWorldEnv(gym.Env):
         self.rewards = {} #might be useful for tracking later on
         #self.max_energy = np.sum(np.square(self.model.actuator_ctrlrange[:,1]))
         self.last_action = None
+        self.total_distance = 0
 
         self.viewer = None
         self.render_mode = render_mode
@@ -199,6 +200,7 @@ class RobotWorldEnv(gym.Env):
         self.info["best_distance_step"] = 0
         self.entry_in_goal_space_step = 0
         self.info["reached_target"] = False
+        self.total_distance = 0
 
         observation = self._get_obs()
         info = self._get_info()
@@ -229,6 +231,8 @@ class RobotWorldEnv(gym.Env):
         tcp_pos = self.data.site_xpos[self.tcp_id]
         distance = np.linalg.norm(tcp_pos - self.target_pos)
         reached_target = False
+
+        self.total_distance += distance
 
         #check for collision
         if(self.check_floor_collision() == True):
@@ -285,6 +289,7 @@ class RobotWorldEnv(gym.Env):
                     "tcp" : tcp_pos,
                     "target": self.target_pos,
                     "distance": distance,
+                    "total_distance" : self.total_distance,
                     "energy": energy,
                     "steps_passed": self.steps_passed,
                     "reached_target": reached_target,
@@ -311,7 +316,7 @@ class RobotWorldEnv(gym.Env):
             #distance scales with steps passed
             # HACK: should scale with timesteps, better with timesteps passed without entering goal space
             
-            self.rewards["distance_reward"] = -self.distance_reward_factor*np.log(measurements["distance"]+ 0.005)
+            self.rewards["distance_reward"] = -self.distance_reward_factor*np.log(measurements["distance"])
 
             #crash, contact with floor
             if(self.info["floor_crash"] == True):
@@ -324,7 +329,7 @@ class RobotWorldEnv(gym.Env):
             self.rewards["floor_distance"] = np.sum(exponential_floor_distance)
             
             #energy  
-            self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"])
+            self.rewards["energy_reward"] = -self.energy_reward_factor*(measurements["energy"])*10*np.exp(-measurements["distance"])-(measurements["energy"])-self.energy_reward_factor
 
             #singularity punishment
             self.rewards["singularity_reward"] = -np.sum(np.square(self.data.qvel)) * self.singularity_reward_factor

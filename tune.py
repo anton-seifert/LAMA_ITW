@@ -1,5 +1,6 @@
 import optuna
 import torch.nn as nn
+import numpy as np
 from stable_baselines3 import PPO,SAC,TD3
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecNormalize, SubprocVecEnv
@@ -19,24 +20,28 @@ def linear_schedule(initial_value):
 
 def objective(trial):
 
-    n_envs = 6
+    n_envs = 12
 
     # Benötigte Config damit der Spaß funktioniert
     minimal_config = {
         "robot_model_path": "assets/test_robot_3DOF.xml",
         "device": "cpu",
         "render_mode": None,
-        "goal_distance": 0.03,
+        "goal_distance": 0.07,
         "max_steps": 3000,
         "truncated_distance_steps": 100,
-        "distance_reward": trial.suggest_float("distance_reward",1.0, 50.0),
-        "energy_reward": trial.suggest_float("energy_reward", 0.0, 50),
-        "goal_reward": trial.suggest_float("goal_reward", 100, 500),
-        "truncated_distance_reward": trial.suggest_float("truncated_distance_reward", 100, 500),
-        "duration_in_target": 50,#trial.suggest_float("duration_in_target",1,50), #der hier ist mir sehr sus, das ist doch von uns gegeben
-        "in_range_reward": trial.suggest_float("in_range_reward",1,50),
+        "distance_reward": trial.suggest_int("distance_reward",1, 100),
+        "energy_reward": trial.suggest_int("energy_reward", 0.0, 50),
+        "goal_reward": trial.suggest_int("goal_reward", 1, 500),
+        "truncated_distance_reward": trial.suggest_int("truncated_distance_reward", 1, 500),
+        "duration_in_target": trial.suggest_int("duration_in_target",1,100),#trial.suggest_float("duration_in_target",1,50), #der hier ist mir sehr sus, das ist doch von uns gegeben
+        "in_range_reward": trial.suggest_int("in_range_reward",1,100),
+        "joint_limit_reward" :trial.suggest_int("joint_limit_reward",1,50),#2,
+        "singularity_reward_factor" : 0, #actually punishes velocity, velocity is infinitly high in singularities
+        "crash_reward": trial.suggest_int("crash_reward",1,500),
+        "floor_distance_reward" : trial.suggest_int("floor_distance_reward",1,50),#10,
     }
-
+    """
     n_steps = trial.suggest_categorical("n_steps", [1024, 2048, 4096])
     batch_size = trial.suggest_categorical("batch_size", [256, 512, 1024, 2048])
 
@@ -68,16 +73,39 @@ def objective(trial):
     # verschieden Algos
     #algo = trial.suggest_categorical("algo", ["PPO", "SAC", "TD3"])
 
-    # Netzwerkarchitektur der Policy
-    net_arch = trial.suggest_categorical(
-    "net_arch",
-    [(128,128), (256,256),(256, 256, 128),(256, 256, 256),(512,512)]
-    )   
-
+    # Architektur: PPO trennt policy (pi) und value function (vf) gerne
+    net_width = trial.suggest_categorical("net_width", [64, 128, 256])
+    depth = trial.suggest_int("net_depth", 1, 3)
+    
+    layers = [net_width] * depth
     policy_kwargs = {
-    "net_arch": list(net_arch),
-    "activation_fn": nn.Tanh,
-    "ortho_init": True,
+        "net_arch": dict(pi=layers, vf=layers), # Explizite Trennung ist sauberer
+        "activation_fn": nn.Tanh,
+        "ortho_init": True,
+    }
+    """
+    n_steps = 2048
+    batch_size = 64
+    
+    hyperparams = {
+        "n_steps": n_steps,
+        "batch_size": batch_size,
+        "learning_rate": 3e-4, # Standard PPO Rate
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "ent_coef": 0.0,       # Erstmal ohne Neugier-Bonus erzwingen
+        "clip_range": 0.2,
+        "n_epochs": 10,
+        "max_grad_norm": 0.5,
+        "vf_coef": 0.5,
+        "use_sde": True,       # Für Robotik lassen wir das an
+    }
+
+    # Standard Architektur
+    policy_kwargs = {
+        "net_arch": dict(pi=[128, 128], vf=[128, 128]),
+        "activation_fn": nn.Tanh,
+        "ortho_init": True,
     }
 
     train_env = make_vec_env(
@@ -112,8 +140,8 @@ def objective(trial):
     # Normalisieren die Beobachtungen, Evaluierung benutzt nun gleiche Werte wie Training
     eval_env.obs_rms = train_env.obs_rms
 
-    total_timesteps = 100_000
-    eval_interval = 20_000
+    total_timesteps = 500_000
+    eval_interval = 100_000
     n_evals = total_timesteps // eval_interval
 
 
@@ -121,28 +149,21 @@ def objective(trial):
         # Tranieren in kleineren Blöcken
         model.learn(total_timesteps=eval_interval)
 
-        # Policy Evaluation
-        mean_reward, std_reward = evaluate_policy(
-            model,
-            eval_env,
-            n_eval_episodes=5,
-            deterministic=True
-        )
-        
-        mean_reward, success_rate, mean_duration = custom_evaluate(
+        mean_reward, success_rate, mean_duration_in_target, mean_distance, std_distance= custom_evaluate(
             model,
             eval_env,
             n_episodes=5,
             deterministic= True
         )
         # Kombinierter Wert aus Mean und Std, für Stabiltät, Faktor kann/sollte angepasst werden 
-        stabiltiy_score = mean_reward - 0.15 * std_reward
+        #stabiltiy_score = mean_reward - 0.15 * std_reward
         
-        #score compromised of succesrate and steps passed
-        success_score = success_rate*1000
-        duration_score = (mean_duration/minimal_config["duration_in_target"])*50
+        #calculate different scores based on their importance
+        success_score = success_rate*1000 #score between 0 and 1000
+        duration_score = (mean_duration_in_target/minimal_config["duration_in_target"])*100 #score between 0 and 100
+        distance_score = 10*np.exp(-(mean_distance +0.25*std_distance)) #score between 0 and 10
         
-        score = stabiltiy_score+success_score+duration_score
+        score = success_score + duration_score + distance_score
         # Score an Optuna melden
         trial.report(score, i)
 
@@ -182,6 +203,6 @@ if __name__ == "__main__":
     db = "sqlite:///optuna_tune.db"
 
     study = optuna.create_study(direction="maximize",sampler=sampler,pruner=pruner,storage=db,study_name=f"PPO_3DOF_Tunen_{config_dict.get('timestamp')}",load_if_exists=True)
-    study.optimize(objective, n_trials=2,show_progress_bar=True)
+    study.optimize(objective, n_trials=250,show_progress_bar=True)
 
     print("Beste Parameter:", study.best_params)
