@@ -145,8 +145,12 @@ def render(config: Optional[dict] = None,
         if done[0]:
 
             #info[0] weil env immer ne list an envs wieder gibt
-            print(f"tcp: {info[0]['tcp']}")           
-            print(f"target: {info[0]['target']}")
+            print()
+            print(f'"start_pos": {info[0]["start_pos"]},')
+            print(f'"start_vel": {info[0]["start_vel"]},')
+            print(f'"target_pos": {info[0]['target']}')
+            print()
+            print(f"tcp: {info[0]['tcp']}")     
             print(f"distance: {info[0]['distance']}")
             print(f"energy: {info[0]['energy']}")
             print(f"steps passed: {info[0]['steps_passed']}")
@@ -155,6 +159,7 @@ def render(config: Optional[dict] = None,
             print(f"steps passed in goal space: {info[0]['total_steps_passed_in_goal_range']}")
             print(f"floor crash: {info[0]['floor_crash']}")
             print(f"terminated: {info[0]['stayed_in_target']}")
+
 
 
 
@@ -179,9 +184,9 @@ if __name__ == "__main__":
     #render_mode human für mujoco viever, "video" for video
 
     start_config = { #dummy data
-        "start_pos": np.array([1.7, -1.7, 1.7]),
-        "start_vel": np.array([0.1, 0.1, 0.1]),
-        "target_pos": np.array([0.5, 0.5, 0.5])
+        "start_pos": [1.7, -1.7, 1.7],
+        "start_vel": [0.1, 0.1, 0.1],
+        "target_pos": [0.5, 0.5, 0.5]
     }
     render(config= config_dict, timestamp="20260204-162342", render_mode= "human", start_config = start_config)
     #render(config= config_dict, timestamp="20260204-162342", render_mode= "human")
