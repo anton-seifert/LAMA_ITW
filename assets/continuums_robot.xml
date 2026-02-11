@@ -1,0 +1,156 @@
+<mujoco model="continuums_robot">
+    <!-- Comments by CRTL K + CRTL C -->
+
+    <!--coordinate local sorgt dafür dass children das parent coordsys benutzen und nicht das globale Koordsys'-->
+    <!-- inertiafromgeom="true" Massenträgheitsmatrix wird von mujoco anhand der geometrie berechnet -->
+    <default>
+        <joint damping="0.1" armature="0.01"/>
+    </default>
+
+    <compiler angle="degree" coordinate="local" inertiafromgeom="true"/> 
+
+    <option timestep="0.01" gravity="0 0 -9.81" />
+
+    <visual>
+        <headlight ambient="0.5 0.5 0.5" diffuse="0.5 0.5 0.5" specular="0 0 0"/>
+        <quality shadowsize="0"/>
+    </visual>
+
+    <asset>
+        <texture name="grid_tex" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 .2 .3" 
+             width="100" height="100" mark="edge" markrgb=".8 .8 .8"/>
+        <material name="grid_material" texture="grid_tex" texrepeat="2 2" texuniform="true"/>
+    </asset>
+
+
+    <worldbody>
+        <light directional="true" diffuse=".8 .8 .8" specular=".2 .2 .2" pos="0 0 5" dir="0 0 -1"/>
+        <light pos="0 0 3" dir="0 0 -1" diffuse="0.8 0.8 0.8" ambient="0.3 0.3 0.3" castshadow="true"/>
+        <light pos="3 0 1.5" dir="-1 0 -0.5" diffuse="0.5 0.5 0.5"/>
+        <light pos="-3 0 1.5" dir="1 0 -0.5" diffuse="0.5 0.5 0.5"/>
+        <light pos="0 3 1.5" dir="0 -1 -0.5" diffuse="0.5 0.5 0.5"/>
+        <light pos="0 -3 1.5" dir="0 1 -0.5" diffuse="0.5 0.5 0.5"/>
+        <geom name="floor" type="box" pos="0 0 -0.8" size="2 2 0.05" material="grid_material" rgba="1 1 1 1"/> 
+
+        <!-- target body for rendering -->
+        <!-- <body name="target" mocap="true" pos="0.5 0.5 0.5">
+            <geom type="sphere" size="0.05" rgba="1 0.282 0.282 1" conaffinity="0" contype="0"/>
+        </body> -->
+
+        <body name="spine1" pos="0 0 0 ">
+            <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 1 0 1"/>
+            <joint name="joint1" type="ball"/>
+            <site name="s01" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0 " />
+            <site name="s02" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0 " />
+            <site name="s03" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0 " />
+            <site name="s04" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0" />
+            <site name="s11" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
+            <site name="s12" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
+            <site name="s13" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
+            <site name="s14" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
+
+            <body name="spine2" pos="0 0 0.1 ">
+                <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 0.5 0 1"/>
+                <joint name="joint2" type="ball"/>
+                <site name="s21" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
+                <site name="s22" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
+                <site name="s23" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
+                <site name="s24" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
+
+                <body name="spine3" pos="0 0 0.1 ">
+                    <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 1 0 1"/>
+                    <joint name="joint3" type="ball"/>
+                    <site name="s31" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
+                    <site name="s32" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
+                    <site name="s33" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
+                    <site name="s34" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
+
+                    <body name="spine4" pos="0 0 0.1 ">
+                        <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 0.5 0 1"/>
+                        <joint name="joint4" type="ball"/>
+                        <site name="s41" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
+                        <site name="s42" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
+                        <site name="s43" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
+                        <site name="s44" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
+
+                        <body name="spine5" pos="0 0 0.1 ">
+                            <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 1 0 1"/>
+                            <joint name="joint5" type="ball"/>
+                            <site name="s51" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
+                            <site name="s52" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
+                            <site name="s53" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
+                            <site name="s54" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
+
+                            <body name="spine6" pos="0 0 0.1 ">
+                                <geom type="cylinder" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 0.5 0 1"/>
+                                <joint name="joint6" type="ball"/>
+                                <site name="s61" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
+                                <site name="s62" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
+                                <site name="s63" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
+                                <site name="s64" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
+                                <site name="s71" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.1 " />
+                                <site name="s72" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.1 " />
+                                <site name="s73" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.1 " />
+                                <site name="s74" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.1" />
+                                 <site name="tcp" pos="0 0 0.1" size="0.01" rgba="1 0 0.929 1"/>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+        
+    </worldbody>
+    <tendon>
+        <spatial name="1" width="0.005" rgba="1 0 0 1">
+            <site site="s01"/>
+            <site site="s11"/>
+            <site site="s21"/>
+            <site site="s31"/>
+            <site site="s41"/>
+            <site site="s51"/>
+            <site site="s61"/>
+            <site site="s71"/>
+        </spatial>
+        <spatial name="2" width="0.005" rgba="1 0 0 1">
+            <site site="s02"/>
+            <site site="s12"/>
+            <site site="s22"/>
+            <site site="s32"/>
+            <site site="s42"/>
+            <site site="s52"/>
+            <site site="s62"/>
+            <site site="s72"/>
+        </spatial>
+        <spatial name="3" width="0.005" rgba="1 0 0 1">
+            <site site="s03"/>
+            <site site="s13"/>
+            <site site="s23"/>
+            <site site="s33"/>
+            <site site="s43"/>
+            <site site="s53"/>
+            <site site="s63"/>
+            <site site="s73"/>
+        </spatial>
+        <spatial name="4" width="0.005" rgba="1 0 0 1">
+            <site site="s04"/>
+            <site site="s14"/>
+            <site site="s24"/>
+            <site site="s34"/>
+            <site site="s44"/>
+            <site site="s54"/>
+            <site site="s64"/>
+            <site site="s74"/>
+        </spatial>
+    </tendon>
+    <actuator>
+        <motor tendon="1" ctrlrange="0 10" ctrllimited="true"/>
+        <motor tendon="2" ctrlrange="0 10" ctrllimited="true"/>
+        <motor tendon="3" ctrlrange="0 10" ctrllimited="true"/>
+        <motor tendon="4" ctrlrange="0 10" ctrllimited="true"/>
+    </actuator>
+    <sensor>
+        <accelerometer name="accel" site="tcp"/>
+        <gyro name="gyro" site="tcp"/>
+  </sensor>
+</mujoco>
