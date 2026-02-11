@@ -9,7 +9,7 @@ from mujoco import viewer
 
 class RobotWorldEnv(gym.Env):
     
-    def __init__(self, config: Optional[dict] = None, render_mode: Optional[str] = None, ):
+    def __init__(self, config: Optional[dict] = None, render_mode: Optional[str] = None):
         print("creating 3DOF_env...")
         #LOAD Variables from config
         #first value = key from dict, second value fallback default value
@@ -27,7 +27,8 @@ class RobotWorldEnv(gym.Env):
         self.singularity_reward_factor = config.get("singularity_reward_factor")
         self.crash_reward_factor = config.get("crash_reward")
         self.floor_distance_reward_factor = config.get("floor_distance_reward")
-        
+
+        self.options = None
 
         #load model from Path
         self.model = mujoco.MjModel.from_xml_path(self.model_path)
@@ -39,8 +40,7 @@ class RobotWorldEnv(gym.Env):
         self.accel_id = self.model.sensor("accel").id
         self.floor_level = self.model.geom_pos[self.floor_id][2]
 
-
-        self.target_pos = np.array([1,1,1]) # just for initialition
+        self.target_pos = np.array([])
         self.steps_passed = 0
         self.steps_passed_in_goal_range_total = 0
         self.info = {}  #just for initaliation, later on gets filled with for tracking succes
@@ -125,6 +125,8 @@ class RobotWorldEnv(gym.Env):
         """
         return self.info
     
+
+    
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         """Start a new episode.
 
@@ -144,42 +146,54 @@ class RobotWorldEnv(gym.Env):
 
         # start the robot in a random configuration(radnom pos and speed)
         #get joint_limits
-        for i in range(100):
-            margin = np.deg2rad(46)
-            joint_range_limits = self.model.jnt_range #[[low1,high1][low2,high2]]
-            #generate reandom staring pos with margin, high-maring, low +margin
-            random_pos = self.np_random.uniform(joint_range_limits[:,0]-margin, joint_range_limits[:,1]+margin, size=self.model.nv)
-            
-            random_vel = self.np_random.uniform(low = -1, high= 1, size= self.model.nv)
-            #write new positions to data with [:]
-            self.data.qpos[:] = random_pos
-            self.data.qvel[:] = random_vel
+        if(self.options is None):
+            for i in range(100):
+                margin = np.deg2rad(46)
+                joint_range_limits = self.model.jnt_range #[[low1,high1][low2,high2]]
+                #generate reandom staring pos with margin, high-maring, low +margin
+                random_pos = self.np_random.uniform(joint_range_limits[:,0]-margin, joint_range_limits[:,1]+margin, size=self.model.nv)
+                
+                random_vel = self.np_random.uniform(low = -1, high= 1, size= self.model.nv)
+                #write new positions to data with [:]
+                self.data.qpos[:] = random_pos
+                self.data.qvel[:] = random_vel
+                mujoco.mj_forward(self.model, self.data)
+
+                #if configuration is okay, break out of for loop
+                if(self.check_floor_collision() == False):
+                    break
+
+            else: #run if foor loop doesnt break
+                print("no random position found")
+                pos = np.array([0, -1.7 , 2])
+                random_vel = self.np_random.uniform(low = -1, high= 1, size= self.model.nv)
+
+                self.data.qpos[:] = pos
+                self.data.qvel[:] = random_vel
+                mujoco.mj_forward(self.model, self.data)
+        else:
+            print("reading from start config")
+            self.data.qpos[:] = self.options["start_pos"]
+            self.data.qvel[:] = self.options["start_vel"]
             mujoco.mj_forward(self.model, self.data)
 
-            #if configuration is okay, break out of for loop
-            if(self.check_floor_collision() == False):
-                break
-
-        else: #run if foor loop doesnt break
-            print("no random position found")
-            pos = np.array([0, -1.7 , 2])
-            random_vel = self.np_random.uniform(low = -1, high= 1, size= self.model.nv)
-
-            self.data.qpos[:] = pos
-            self.data.qvel[:] = random_vel
-            mujoco.mj_forward(self.model, self.data)
 
 
 
         # Randomly place target, ensuring it's different from tcp pos
-        self.target_pos = self.calculate_target_for_sphere()
         tcp_pos = self.data.site("tcp").xpos
-        distance = np.linalg.norm(tcp_pos - self.target_pos)
-        #if tcp pos and target are too close, look for new target
-        while (distance <= 0.5):
-            #print("calc new target")
+        if(self.options is None):
             self.target_pos = self.calculate_target_for_sphere()
             distance = np.linalg.norm(tcp_pos - self.target_pos)
+            #if tcp pos and target are too close, look for new target
+            while (distance <= 0.5):
+                #print("calc new target")
+                self.target_pos = self.calculate_target_for_sphere()
+                distance = np.linalg.norm(tcp_pos - self.target_pos)
+        else:
+            self.target_pos = self.options["target_pos"]
+
+        distance = np.linalg.norm(tcp_pos - self.target_pos)
 
         self.info["best_distance"] = distance
         self.info["best_distance_step"] = 0
@@ -190,6 +204,8 @@ class RobotWorldEnv(gym.Env):
         info = self._get_info()
 
         return observation, info
+    
+
     
     def step(self, action):
         """Execute one timestep within the environment.
@@ -415,6 +431,10 @@ class RobotWorldEnv(gym.Env):
                 self.viewer = viewer.launch_passive(self.model, self.data)
             
             self.viewer.sync()
+
+    def set_reset_options(self, options: dict):
+        self.options = options
+        print("loaded start config")
             
         
 

@@ -3,6 +3,7 @@ from stable_baselines3 import PPO, TD3, DDPG, SAC
 import os
 import sys
 import time
+import numpy as np
 from typing import Optional
 from gymnasium.wrappers import RecordVideo
 from stable_baselines3.common.env_util import make_vec_env
@@ -36,7 +37,9 @@ def render(config: Optional[dict] = None,
            robot_model_path: Optional[str] = None, 
            trained_model_path: Optional[str] = None, 
            render_mode: Optional[str] = None,  # 'human' oder 'video'
-           timestamp: Optional[str] = None):
+           timestamp: Optional[str] = None,
+           start_config: Optional[np.array] = None,
+           ):
 
     # --- 1. Konfiguration laden ---
     environment = config.get("robot_model_path")
@@ -108,7 +111,7 @@ def render(config: Optional[dict] = None,
     # --- 4. Modell laden & Loop ---
     #model_path must bei vecnorm
     model = Algo_Class.load(trained_model_path, env = env, device="cpu")
-    
+    env.env_method("set_reset_options", start_config)
     obs = env.reset()
     done = False
 
@@ -147,4 +150,11 @@ if __name__ == "__main__":
     #hier einstellen aus welcher config geladen werden solll, muss zum roboter passen #configurations.config_test oder configurations.config_3DOF
     from configurations.config_3DOF import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-    render(config= config_dict, timestamp="20260204-005825", render_mode= "human")
+
+    start_config = { #dummy data
+        "start_pos": np.array([1.7, -1.7, 1.7]),
+        "start_vel": np.array([0.1, 0.1, 0.1]),
+        "target_pos": np.array([0.5, 0.5, 0.5])
+    }
+    render(config= config_dict, timestamp="20260204-162342", render_mode= "human", start_config = start_config)
+    #render(config= config_dict, timestamp="20260204-162342", render_mode= "human")
