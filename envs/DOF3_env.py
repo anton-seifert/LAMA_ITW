@@ -212,10 +212,9 @@ class RobotWorldEnv(gym.Env):
              
 
         mujoco.mj_forward(self.model, self.data)
-        tcp_pos = self.data.site("tcp").xpos
-        distance = np.linalg.norm(tcp_pos - self.target_pos)
+        
 
-        self.info["best_distance"] = distance
+        
         self.info["best_distance_step"] = 0
         self.entry_in_goal_space_step = 0
         self.info["reached_target"] = False
@@ -225,10 +224,14 @@ class RobotWorldEnv(gym.Env):
         self.info["target"] = self.target_pos
 
         #warm up
-        zero_action = np.zeros(self.model.nu)
         for _ in range(5):
-            self.data.ctrl[:] = zero_action
+            #calculates generalized forces to keep robot stable while warm up
+            self.data.ctrl[:] = self.data.qfrc_bias[:self.model.nu]
             mujoco.mj_step(self.model, self.data)
+
+        tcp_pos = self.data.site("tcp").xpos
+        distance = np.linalg.norm(tcp_pos - self.target_pos)
+        self.info["best_distance"] = distance
 
         observation = self._get_obs()
         info = self._get_info()
