@@ -27,7 +27,7 @@ def objective(trial):
         "robot_model_path": "assets/test_robot_3DOF.xml",
         "device": "cpu",
         "render_mode": None,
-        "goal_distance": 0.01,
+        "goal_distance" : 0.01,
         "max_steps": 500,
         "truncated_distance_steps": 100,
         "duration_in_target": 50,
@@ -141,18 +141,19 @@ def objective(trial):
     eval_env.obs_rms = train_env.obs_rms
 
     total_timesteps = 500_000
-    eval_interval = 100_000
+    eval_interval = 25_000
     n_evals = total_timesteps // eval_interval
 
+    last_scores = []
 
     for i in range(n_evals):
         # Tranieren in kleineren Blöcken
-        model.learn(total_timesteps=eval_interval)
+        model.learn(total_timesteps=eval_interval, reset_num_timesteps=False)
 
         mean_reward, success_rate, mean_duration_in_target, mean_distance, std_distance= custom_evaluate(
             model,
             eval_env,
-            n_episodes=5,
+            n_episodes=15,
             deterministic= True
         )
         # Kombinierter Wert aus Mean und Std, für Stabiltät, Faktor kann/sollte angepasst werden 
@@ -161,9 +162,12 @@ def objective(trial):
         #calculate different scores based on their importance
         success_score = success_rate*1000 #score between 0 and 1000
         duration_score = (mean_duration_in_target/minimal_config["duration_in_target"])*100 #score between 0 and 100
-        distance_score = 10*np.exp(-(mean_distance +0.25*std_distance)) #score between 0 and 10
-        
+        distance_score = 10/(1+mean_distance +0.25*std_distance) #score between 0 and 10
+        #print(f"distance_score: {distance_score}")
+        #print(f"duration_score: {duration_score}")
+        #print(f"success_score: {success_score}")
         score = success_score + duration_score + distance_score
+        last_scores.append(score)
         # Score an Optuna melden
         trial.report(score, i)
 
@@ -176,7 +180,8 @@ def objective(trial):
     train_env.close()
     eval_env.close()
 
-    return score
+    final_score = np.mean(last_scores[-3:]) if len(last_scores) >= 3 else np.mean(last_scores)
+    return final_score
 
     
 
@@ -196,13 +201,13 @@ if __name__ == "__main__":
 
     # Pruner: bricht schlechte Trainings frühzeitig ab
     pruner = optuna.pruners.MedianPruner(
-        n_startup_trials=10,
-        n_warmup_steps=1,
+        n_startup_trials=5,
+        n_warmup_steps=5,
         interval_steps=1
     )
     db = "sqlite:///optuna_tune.db"
 
     study = optuna.create_study(direction="maximize",sampler=sampler,pruner=pruner,storage=db,study_name=f"PPO_3DOF_Tunen_{config_dict.get('timestamp')}",load_if_exists=True)
-    study.optimize(objective, n_trials=90,show_progress_bar=True)
+    study.optimize(objective, n_trials=200,show_progress_bar=True)
 
     print("Beste Parameter:", study.best_params)
