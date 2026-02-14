@@ -47,7 +47,7 @@ class RobotWorldEnv(gym.Env):
         self.info = {}  #just for initaliation, later on gets filled with for tracking succes
         self.rewards = {} #might be useful for tracking later on
         #self.max_energy = np.sum(np.square(self.model.actuator_ctrlrange[:,1]))
-        self.last_action = None
+        self.last_action = np.array([0,0,0])
         self.total_distance = 0
 
         self.viewer = None
@@ -61,12 +61,13 @@ class RobotWorldEnv(gym.Env):
         """
         nv = degrees of freedom, also eig die number of velocities, or acceleration
         nq = number of generalized coords, die angle position (das kracht beim continums robot, weil dann quateriums oder so benutzt werden, nicht 3 komponenten, sondern 4)
+        agent: 3 pos, 3 vel, 3 acc, 3 action
         sensor 3 TCP Acc, 3 TCP Gyro
         kinematic: 3 TCP pos, xyz
         target: 3 Target_pos xyz
         # """
 
-        number_of_agent_observations = self.model.nq + 2*self.model.nv
+        number_of_agent_observations = self.model.nq + 3*self.model.nv
         #print(f"number of agent observations {number_of_agent_observations}")
         self.observation_space = gym.spaces.Dict(
             {
@@ -104,7 +105,8 @@ class RobotWorldEnv(gym.Env):
         
         agent_obs = np.concatenate([self.data.qpos.flat[:], 
                                     self.data.qvel.flat[:], 
-                                    self.data.qacc.flat[:]]).astype(np.float32)
+                                    self.data.qacc.flat[:],
+                                    self.last_action.flat[:]]).astype(np.float32)
         
         sensors_obs = np.concatenate([self.data.sensordata]).astype(np.float32)
 
@@ -146,7 +148,7 @@ class RobotWorldEnv(gym.Env):
 
         self.steps_passed = 0
         self.steps_passed_in_goal_range_total = 0
-        self.last_action = None
+        self.last_action = np.array([0,0,0])
 
         # start the robot in a random configuration(radnom pos and speed)
         #get joint_limits
