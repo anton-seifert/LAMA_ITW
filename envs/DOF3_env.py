@@ -140,6 +140,8 @@ class RobotWorldEnv(gym.Env):
         """
         # IMPORTANT: Must call this first to seed the random number generator
         super().reset(seed=seed)
+        mujoco.mj_resetData(self.model, self.data)  # hard reset full simulator state
+
 
         self.steps_passed = 0
         self.steps_passed_in_goal_range_total = 0
@@ -203,6 +205,12 @@ class RobotWorldEnv(gym.Env):
         self.info["start_pos"] = self.data.qpos.tolist()
         self.info["start_vel"] = self.data.qvel.tolist()
         self.info["target"] = self.target_pos
+
+        #warm up
+        zero_action = np.zeros(self.model.nu)
+        for _ in range(5):
+            self.data.ctrl[:] = zero_action
+            mujoco.mj_step(self.model, self.data)
 
         observation = self._get_obs()
         info = self._get_info()
