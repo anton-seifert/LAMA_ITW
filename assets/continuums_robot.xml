@@ -4,7 +4,7 @@
     <!--coordinate local sorgt dafür dass children das parent coordsys benutzen und nicht das globale Koordsys'-->
     <!-- inertiafromgeom="true" Massenträgheitsmatrix wird von mujoco anhand der geometrie berechnet -->
     <default>
-        <joint stiffness ="0.1" damping="0.1" springref="0" range="0 45" limited="true"/>
+        <joint stiffness ="0.5" damping="0.1" springref="0" range="0 45" limited="true"/>
         <tendon stiffness="0" damping="0.1" width="0.005"/>
         <geom density="100" />
     </default>
@@ -94,7 +94,7 @@
                                 <site name="s72" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.1 " />
                                 <site name="s73" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.1 " />
                                 <site name="s74" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.1" />
-                                 <site name="tcp" pos="0 0 0.1" size="0.01" rgba="1 0 0.929 1"/>
+                                <site name="tcp" pos="0 0 0.1" size="0.01" rgba="1 0 0.929 1"/>
                             </body>
                         </body>
                     </body>
@@ -114,7 +114,7 @@
             <site site="s61"/>
             <site site="s71"/>
         </spatial>
-        <spatial name="2" width="0.005" rgba="1 0 0 1">
+        <spatial name="2" width="0.005" rgba="0.5 0 0 1">
             <site site="s02"/>
             <site site="s12"/>
             <site site="s22"/>
@@ -124,7 +124,7 @@
             <site site="s62"/>
             <site site="s72"/>
         </spatial>
-        <spatial name="3" width="0.005" rgba="1 0 0 1">
+        <spatial name="3" width="0.005" rgba="0 1 0 1">
             <site site="s03"/>
             <site site="s13"/>
             <site site="s23"/>
@@ -134,7 +134,7 @@
             <site site="s63"/>
             <site site="s73"/>
         </spatial>
-        <spatial name="4" width="0.005" rgba="1 0 0 1">
+        <spatial name="4" width="0.005" rgba="0 0.5 0 1">
             <site site="s04"/>
             <site site="s14"/>
             <site site="s24"/>
