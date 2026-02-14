@@ -80,7 +80,8 @@ def train(config: Optional[dict] = None):
         project="Bachelor_Robot_RL", 
         config=config, 
         sync_tensorboard=True,
-        monitor_gym= False #true if you want to upload every video done in training 
+        monitor_gym= False, #true if you want to upload every video done in training 
+        reinit=True
     )
     wandb.save("configurations/config_3DOF.py", base_path="configurations", policy="now")
 
@@ -165,7 +166,7 @@ def train(config: Optional[dict] = None):
     #TODO: safe best vecnorm
     wandb.save(f"models/{algo}_training/best_models/best_model_{timestamp}/best_model.zip", base_path=f"models/{algo}_training/best_models/best_model_{timestamp}")
     wandb.save(f"models/{algo}_training/best_models/best_model_{timestamp}/vec_normalize.pkl", base_path=f"models/{algo}_training/best_models/best_model_{timestamp}")
-    
+    #run.finish()
     #model.save(model_save_path)
     #vec_train_env.save(stats_save_path)
 
