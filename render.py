@@ -147,7 +147,7 @@ def render(config: Optional[dict] = None,
             print()
             print(f'"start_pos": {info[0]["start_pos"]},')
             print(f'"start_vel": {info[0]["start_vel"]},')
-            print(f'"target_pos": {info[0]['target']}')
+            print(f'"target_pos": {info[0]["target"]}')
             print()
             print(f"tcp: {info[0]['tcp']}")     
             print(f"distance: {info[0]['distance']}")
@@ -182,6 +182,6 @@ if __name__ == "__main__":
     from configurations.config_3DOF import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
 
-    start_config = {'start_pos': [-5.2790651279637775, -1.3129670886419933, -1.723047472017417], 'start_vel': [0.8935252983499058, -0.910112125215865, 0.9217188150365443], 'target_pos': [-0.20659574504920705, 0.2359793281042832, 0.02662716813099197]}
-    render(config= config_dict, timestamp="20260214-100213", render_mode= "human", start_config = start_config)
+    start_config = {'start_pos': [5.42238822421367, -1.8793518530640618, -0.5080234680410118], 'start_vel': [-0.600836999027871, -0.473362838893129, 0.4274060201650125], 'target_pos': [0.09003025286332965, -0.25241871811004096, 0.4590233479980036]}
+    render(config= config_dict, timestamp="20260214-003536", render_mode= "human", start_config = start_config)
     #render(config= config_dict, timestamp="20260214-100213", render_mode= "human")
