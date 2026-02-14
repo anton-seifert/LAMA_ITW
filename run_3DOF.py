@@ -3,6 +3,8 @@ from typing import Optional
 #import subscripts
 
 from render import render
+from testing.testing3DOF import test
+from testing.test_set_3DOF import test_start_config
 
 def main(config: Optional[dict] = None):
 
@@ -30,8 +32,13 @@ def main(config: Optional[dict] = None):
     train(config = config)
     #TODO: hier test run zu evaluation
 
+    print("TESTING")
+    test(start_configs= test_start_config, general_config= config)
+
     #RENDER Model
     render(config)
+
+
 
 
 
