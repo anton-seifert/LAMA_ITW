@@ -4,6 +4,7 @@ import mujoco
 from gymnasium.envs.mujoco import MujocoEnv
 from typing import Optional
 from mujoco import viewer
+import time
 
 
 
@@ -140,6 +141,8 @@ class RobotWorldEnv(gym.Env):
         """
         # IMPORTANT: Must call this first to seed the random number generator
         super().reset(seed=seed)
+        mujoco.mj_resetData(self.model, self.data)  # hard reset full simulator state
+
 
         self.steps_passed = 0
         self.steps_passed_in_goal_range_total = 0
@@ -152,7 +155,7 @@ class RobotWorldEnv(gym.Env):
                 margin = np.deg2rad(46)
                 joint_range_limits = self.model.jnt_range #[[low1,high1][low2,high2]]
                 #generate reandom staring pos with margin, high-maring, low +margin
-                random_pos = self.np_random.uniform(joint_range_limits[:,0]-margin, joint_range_limits[:,1]+margin, size=self.model.nv)
+                random_pos = self.np_random.uniform(low = joint_range_limits[:,0]+margin, high= joint_range_limits[:,1]-margin, size=self.model.nv)
                 
                 random_vel = self.np_random.uniform(low = -1, high= 1, size= self.model.nv)
                 #write new positions to data with [:]
@@ -173,6 +176,7 @@ class RobotWorldEnv(gym.Env):
                 self.data.qvel[:] = random_vel
                 mujoco.mj_forward(self.model, self.data)
         else:
+            #print("starting from options")
             self.data.qpos[:] = self.options["start_pos"]
             self.data.qvel[:] = self.options["start_vel"]
             mujoco.mj_forward(self.model, self.data)
@@ -191,8 +195,22 @@ class RobotWorldEnv(gym.Env):
                 self.target_pos = self.calculate_target_for_sphere()
                 distance = np.linalg.norm(tcp_pos - self.target_pos)
         else:
+            #print("target from options")
             self.target_pos = self.options["target_pos"]
 
+        #rendering target sphere
+        body_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, "target")
+        if body_id != -1:
+            # Die Mocap-ID holen (Mapping von Body -> Mocap)
+            mocap_id = self.model.body_mocapid[body_id]
+
+        if mocap_id != -1:
+            self.data.mocap_pos[mocap_id] = self.target_pos 
+            # update kinematics
+             
+
+        mujoco.mj_forward(self.model, self.data)
+        tcp_pos = self.data.site("tcp").xpos
         distance = np.linalg.norm(tcp_pos - self.target_pos)
 
         self.info["best_distance"] = distance
@@ -203,6 +221,12 @@ class RobotWorldEnv(gym.Env):
         self.info["start_pos"] = self.data.qpos.tolist()
         self.info["start_vel"] = self.data.qvel.tolist()
         self.info["target"] = self.target_pos
+
+        #warm up
+        zero_action = np.zeros(self.model.nu)
+        for _ in range(5):
+            self.data.ctrl[:] = zero_action
+            mujoco.mj_step(self.model, self.data)
 
         observation = self._get_obs()
         info = self._get_info()
@@ -416,15 +440,7 @@ class RobotWorldEnv(gym.Env):
         # diesen code block nach unten verschieben, wenn man das target immer in der gleichen stelle haben will
 
         # visalize target with movable body named target
-        body_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, "target")
-        if body_id != -1:
-            # Die Mocap-ID holen (Mapping von Body -> Mocap)
-            mocap_id = self.model.body_mocapid[body_id]
-
-        if mocap_id != -1:
-            self.data.mocap_pos[mocap_id] = self.target_pos 
-            # update kinematics
-            mujoco.mj_forward(self.model, self.data) 
+        
         #---------------
 
         # Minimaler Render-Code für gym.Env
@@ -437,6 +453,7 @@ class RobotWorldEnv(gym.Env):
                 self.viewer = viewer.launch_passive(self.model, self.data)
             
             self.viewer.sync()
+            time.sleep(self.model.opt.timestep)
 
     def set_reset_options(self, options: dict):
         self.options = options

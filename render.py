@@ -70,7 +70,7 @@ def render(config: Optional[dict] = None,
     # Standard-Werte für "Human"
     env_render_mode = "human"  # Das, was wir an die Klasse übergeben
     use_video_wrapper = False
-    sleep_time = 0.05        # Damit man im Viewer was erkennt (ca. 60-100 FPS)
+    sleep_time = 0.03        # Damit man im Viewer was erkennt (ca. 60-100 FPS)
 
     # Anpassung für "Video"
     if render_mode == "video":
@@ -182,10 +182,6 @@ if __name__ == "__main__":
     from configurations.config_3DOF import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
 
-    start_config = { #dummy data
-        "start_pos": [1.7, -1.7, 1.7],
-        "start_vel": [0.1, 0.1, 0.1],
-        "target_pos": [0.5, 0.5, 0.5]
-    }
-    render(config= config_dict, timestamp="20260204-162342", render_mode= "human", start_config = start_config)
-    #render(config= config_dict, timestamp="20260204-162342", render_mode= "human")
+    start_config = {'start_pos': [-5.2790651279637775, -1.3129670886419933, -1.723047472017417], 'start_vel': [0.8935252983499058, -0.910112125215865, 0.9217188150365443], 'target_pos': [-0.20659574504920705, 0.2359793281042832, 0.02662716813099197]}
+    render(config= config_dict, timestamp="20260214-100213", render_mode= "human", start_config = start_config)
+    #render(config= config_dict, timestamp="20260214-100213", render_mode= "human")

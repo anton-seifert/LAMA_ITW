@@ -30,11 +30,11 @@ def objective(trial):
         "goal_distance" : 0.01,
         "max_steps": 500,
         "truncated_distance_steps": 100,
+        "duration_in_target": 50,
         "distance_reward": trial.suggest_int("distance_reward",1, 100),
         "energy_reward": trial.suggest_int("energy_reward", 0.0, 50),
         "goal_reward": trial.suggest_int("goal_reward", 1, 500),
         "truncated_distance_reward": trial.suggest_int("truncated_distance_reward", 1, 500),
-        "duration_in_target": trial.suggest_int("duration_in_target",1,100),#trial.suggest_float("duration_in_target",1,50), #der hier ist mir sehr sus, das ist doch von uns gegeben
         "in_range_reward": trial.suggest_int("in_range_reward",1,100),
         "joint_limit_reward" :trial.suggest_int("joint_limit_reward",1,50),#2,
         "singularity_reward_factor" : 0, #actually punishes velocity, velocity is infinitly high in singularities
