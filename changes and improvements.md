@@ -1,5 +1,7 @@
 # Improvements?
 
+reset free reeinforcement learing oder hybrid
+conti roboter mit wirklichen backbone oder ähnlichem
 1.
 Steps passed/max steps als input ins netz?
 
@@ -15,7 +17,7 @@ Epsilon einstellen?
 5.
 action noise?
 
-6.
+6. done
 Policy evaulieren (test Set)?
 
 7. done
@@ -30,7 +32,7 @@ wirkliche kinetische energy berechnen und als eval metric nehmen
 10. done
 results speichern in json oder so
 
-11.
+11. done, aber quark
 automatisiertes testen der param with OPTUNA
 
 # Changes we got to make later on for the contiuum robot:
