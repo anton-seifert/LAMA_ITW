@@ -38,7 +38,7 @@ ENV_MAP = {
 
 #Maps the number of train_envs to PC
 N_ENV_MAP = {
-    "An" : 20,  
+    "An" : 30,  
     "Ar": 30,
     "IT" :11
 }
