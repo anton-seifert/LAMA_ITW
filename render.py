@@ -21,6 +21,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 from envs.test_env import RobotWorldEnv as DOF2_env
 from envs.DOF3_env import RobotWorldEnv as DOF3_env
+from envs.conti_env import RobotWorldEnv as Conti_env
 
 
 
@@ -33,7 +34,8 @@ ALGO_MAP = {
 
 ENV_MAP = {
     "assets/test_robot.xml" : DOF2_env,
-    "assets/test_robot_3DOF.xml" : DOF3_env
+    "assets/test_robot_3DOF.xml" : DOF3_env,
+    "assets/continuums_robot.xml" : Conti_env
 }
 
 
@@ -178,10 +180,10 @@ def render(config: Optional[dict] = None,
         print(f"Video gespeichert in: {os.path.abspath(video_folder)}")
 
 if __name__ == "__main__":
-    #hier einstellen aus welcher config geladen werden solll, muss zum roboter passen #configurations.config_test oder configurations.config_3DOF
-    from configurations.config_3DOF import Settings as config_dict
     #render_mode human für mujoco viever, "video" for video
-
+    #hier einstellen aus welcher config geladen werden solll, muss zum roboter passen #configurations.config_test oder configurations.config_3DOF
+    from configurations.config_conti import Settings as config_dict
+    
     start_config = {'start_pos': [5.42238822421367, -1.8793518530640618, -0.5080234680410118], 'start_vel': [-0.600836999027871, -0.473362838893129, 0.4274060201650125], 'target_pos': [0.09003025286332965, -0.25241871811004096, 0.4590233479980036]}
-    render(config= config_dict, timestamp="20260214-003536", render_mode= "human", start_config = start_config)
-    #render(config= config_dict, timestamp="20260214-100213", render_mode= "human")
+    #render(config= config_dict, timestamp="20260216-005242", render_mode= "human", start_config = start_config)
+    render(config= config_dict, timestamp="20260216-005242", render_mode= "human")
