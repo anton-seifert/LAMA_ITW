@@ -30,7 +30,6 @@ def main(config: Optional[dict] = None):
     #TRAINING
     
     train(config = config)
-    #TODO: hier test run zu evaluation
 
     print("TESTING")
     test(start_configs= test_start_config, general_config= config)
