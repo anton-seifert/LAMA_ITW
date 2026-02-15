@@ -36,3 +36,13 @@ haben sehr gute modelle auf dem papier trainiert, die aber kompletter schrott wa
 
 - roboter lässt sich auf joint limit ausruhen
     punishment hoch und joint lockerer machen, dass es zum crash kommen würde
+    gelöst durch richtige rewards und punishment fpr joint limits
+
+- wirkliches trackking und nachvollziehenen des verhaltens schwer#
+    rewards plotten + video
+
+- testset für roboter resulatate anders bei render mode
+    mj_Data_reset resettet auch mujoco env
+
+- reward hacking
+    max steps kleiner machen, damit reward hacking sihc nicht lohnt
