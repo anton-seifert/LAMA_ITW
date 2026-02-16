@@ -32,6 +32,7 @@ models/
 wandb/
 
 configurations/config_3DOF.py
+configurations/config_3DOF_SAC.py
 
 configurations/config_test.py
 
