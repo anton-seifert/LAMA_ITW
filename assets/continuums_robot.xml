@@ -32,76 +32,77 @@
         <light pos="-3 0 1.5" dir="1 0 -0.5" diffuse="0.5 0.5 0.5"/>
         <light pos="0 3 1.5" dir="0 -1 -0.5" diffuse="0.5 0.5 0.5"/>
         <light pos="0 -3 1.5" dir="0 1 -0.5" diffuse="0.5 0.5 0.5"/>
-        <geom name="floor" type="box" pos="0 0 -0.8" size="2 2 0.05" material="grid_material" rgba="1 1 1 1"/> 
+        <geom name="floor" type="plane" pos="0 0 -0.8" size="2 2 0.1" material="grid_material" rgba="1 1 1 1"/> 
 
         <!-- target body for rendering -->
         <body name="target" mocap="true" pos="0.5 0.5 0.5">
-            <geom type="sphere" size="0.05" rgba="1 0.282 0.282 1" conaffinity="0" contype="0"/>
+            <geom type="sphere" size="0.02" rgba="1 0.282 0.282 1" conaffinity="0" contype="0"/>
         </body>
-
-        <body name="spine1" pos="0 0 0 ">
-            <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 1 0 1"/>
-            <joint name="joint1" type="ball"/>
+        <body name="base" pos="0 0 0">
+            <geom type="sphere" size="0.03" />
             <site name="s01" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0 " />
             <site name="s02" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0 " />
             <site name="s03" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0 " />
             <site name="s04" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0" />
-            <site name="s11" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
-            <site name="s12" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
-            <site name="s13" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
-            <site name="s14" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
+            <body name="spine1" pos="0 0 0 ">
+                <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 1 0 1"/>
+                <joint name="joint1" type="ball"/>
+                <site name="s11" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
+                <site name="s12" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
+                <site name="s13" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
+                <site name="s14" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
 
-            <body name="spine2" pos="0 0 0.1 ">
-                <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 0.5 0 1"/>
-                <joint name="joint2" type="ball"/>
-                <site name="s21" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
-                <site name="s22" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
-                <site name="s23" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
-                <site name="s24" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
+                <body name="spine2" pos="0 0 0.1 ">
+                    <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 0.5 0 1"/>
+                    <joint name="joint2" type="ball"/>
+                    <site name="s21" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
+                    <site name="s22" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
+                    <site name="s23" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
+                    <site name="s24" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
 
-                <body name="spine3" pos="0 0 0.1 ">
-                    <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 1 0 1"/>
-                    <joint name="joint3" type="ball"/>
-                    <site name="s31" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
-                    <site name="s32" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
-                    <site name="s33" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
-                    <site name="s34" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
+                    <body name="spine3" pos="0 0 0.1 ">
+                        <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 1 0 1"/>
+                        <joint name="joint3" type="ball"/>
+                        <site name="s31" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
+                        <site name="s32" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
+                        <site name="s33" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
+                        <site name="s34" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
 
-                    <body name="spine4" pos="0 0 0.1 ">
-                        <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 0.5 0 1"/>
-                        <joint name="joint4" type="ball"/>
-                        <site name="s41" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
-                        <site name="s42" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
-                        <site name="s43" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
-                        <site name="s44" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
+                        <body name="spine4" pos="0 0 0.1 ">
+                            <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 0.5 0 1"/>
+                            <joint name="joint4" type="ball"/>
+                            <site name="s41" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
+                            <site name="s42" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
+                            <site name="s43" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
+                            <site name="s44" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
 
-                        <body name="spine5" pos="0 0 0.1 ">
-                            <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 1 0 1"/>
-                            <joint name="joint5" type="ball"/>
-                            <site name="s51" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
-                            <site name="s52" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
-                            <site name="s53" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
-                            <site name="s54" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
+                            <body name="spine5" pos="0 0 0.1 ">
+                                <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 1 0 1"/>
+                                <joint name="joint5" type="ball"/>
+                                <site name="s51" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
+                                <site name="s52" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
+                                <site name="s53" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
+                                <site name="s54" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
 
-                            <body name="spine6" pos="0 0 0.1 ">
-                                <geom type="cylinder" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 0.5 0 1" />
-                                <joint name="joint6" type="ball"/>
-                                <site name="s61" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
-                                <site name="s62" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
-                                <site name="s63" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
-                                <site name="s64" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
-                                <site name="s71" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.1 " />
-                                <site name="s72" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.1 " />
-                                <site name="s73" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.1 " />
-                                <site name="s74" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.1" />
-                                <site name="tcp" pos="0 0 0.1" size="0.01" rgba="1 0 0.929 1"/>
+                                <body name="spine6" pos="0 0 0.1 ">
+                                    <geom type="cylinder" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 0.5 0 1" />
+                                    <joint name="joint6" type="ball"/>
+                                    <site name="s61" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
+                                    <site name="s62" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
+                                    <site name="s63" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
+                                    <site name="s64" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.05" />
+                                    <site name="s71" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.1 " />
+                                    <site name="s72" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.1 " />
+                                    <site name="s73" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.1 " />
+                                    <site name="s74" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 -0.04 0.1" />
+                                    <site name="tcp" pos="0 0 0.1" size="0.01" rgba="1 0 0.929 1"/>
+                                </body>
                             </body>
                         </body>
                     </body>
                 </body>
             </body>
         </body>
-        
     </worldbody>
     <tendon>
         <spatial name="1" width="0.005" rgba="1 0 0 1">

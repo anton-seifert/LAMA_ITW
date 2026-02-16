@@ -46,9 +46,6 @@ if __name__ == "__main__" :
     from configurations.config_conti import Settings as config_dict
     from train.conti_train import train
     main(config= config_dict)
-    main(config= config_dict)
-    main(config= config_dict)
-    main(config= config_dict)
 
     
 
