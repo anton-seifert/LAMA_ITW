@@ -33,7 +33,7 @@ wandb/
 
 configurations/config_3DOF.py
 configurations/config_3DOF_SAC.py
-
+configurations/config_conti.py
 configurations/config_test.py
 
 check_amd.py
