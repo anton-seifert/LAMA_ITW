@@ -35,9 +35,9 @@
         <geom name="floor" type="box" pos="0 0 -0.8" size="2 2 0.05" material="grid_material" rgba="1 1 1 1"/> 
 
         <!-- target body for rendering -->
-        <!-- <body name="target" mocap="true" pos="0.5 0.5 0.5">
+        <body name="target" mocap="true" pos="0.5 0.5 0.5">
             <geom type="sphere" size="0.05" rgba="1 0.282 0.282 1" conaffinity="0" contype="0"/>
-        </body> -->
+        </body>
 
         <body name="spine1" pos="0 0 0 ">
             <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 1 0 1"/>
