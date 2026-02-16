@@ -35,4 +35,6 @@ configurations/config_3DOF.py
 
 configurations/config_test.py
 
+configurations/config_conti.py
+
 check_amd.py
