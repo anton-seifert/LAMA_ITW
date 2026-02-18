@@ -29,7 +29,8 @@ Settings = {
     "crash_reward":  46,
     "floor_distance_reward" : 26,
     "duration_in_target" : 59, #steps need to pass in goal area for env to terminate
-
+    "target_angle_train": 1.5*nn.pi,
+    "target_angle_check": 2*nn.pi,
     
 
     #TRAIN INFO
