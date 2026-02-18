@@ -21,7 +21,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 from envs.test_env import RobotWorldEnv as DOF2_env
 from envs.DOF3_env import RobotWorldEnv as DOF3_env
-from envs.conti_env import RobotWorldEnv as Conti_env
+#from envs.conti_env import RobotWorldEnv as Conti_env
 
 
 
@@ -35,7 +35,7 @@ ALGO_MAP = {
 ENV_MAP = {
     "assets/test_robot.xml" : DOF2_env,
     "assets/test_robot_3DOF.xml" : DOF3_env,
-    "assets/continuums_robot.xml" : Conti_env
+    #"assets/continuums_robot.xml" : Conti_env
 }
 
 
@@ -60,6 +60,8 @@ def render(config: Optional[dict] = None,
 
     if trained_model_path is None:
         trained_model_path = f"models/{algo}_training/best_models/best_model_{timestamp}/best_model.zip"
+
+    target_angle_check = config.get("target_angle_check")
     
     
     
@@ -88,7 +90,7 @@ def render(config: Optional[dict] = None,
     env = make_vec_env(
     Env_Class, 
     n_envs=1, 
-    env_kwargs={"config": config, "render_mode": env_render_mode} # render_mode ist für Video wichtig
+    env_kwargs={"config": config, "render_mode": env_render_mode, "target_angle": target_angle_check} # render_mode ist für Video wichtig
     )
 
     #normalize_vec_env  
@@ -182,8 +184,8 @@ def render(config: Optional[dict] = None,
 if __name__ == "__main__":
     #render_mode human für mujoco viever, "video" for video
     #hier einstellen aus welcher config geladen werden solll, muss zum roboter passen #configurations.config_test oder configurations.config_3DOF
-    from configurations.config_conti import Settings as config_dict
+    from configurations.config_3DOF import Settings as config_dict
     
-    start_config = {'start_pos': [5.42238822421367, -1.8793518530640618, -0.5080234680410118], 'start_vel': [-0.600836999027871, -0.473362838893129, 0.4274060201650125], 'target_pos': [0.09003025286332965, -0.25241871811004096, 0.4590233479980036]}
+    start_config = {'start_pos': [5.42238822421367, -0.8793518530640618, -0.0080234680410118], 'start_vel': [-0.600836999027871, -0.473362838893129, 0.4274060201650125], 'target_pos': [0.9003025286332965, -0.301871811004096, 0.890233479980036]}
     #render(config= config_dict, timestamp="20260216-005242", render_mode= "human", start_config = start_config)
-    render(config= config_dict, timestamp="20260216-005242", render_mode= "human")
+    render(config= config_dict, timestamp="20260217-151001", render_mode= "video")
