@@ -10,7 +10,6 @@ from wandb.integration.sb3 import WandbCallback
 from stable_baselines3.common.vec_env import VecVideoRecorder, DummyVecEnv
 from utils import AutoSaveVecNormalize
 
-
 import os
 import sys
 import time
@@ -38,7 +37,7 @@ ENV_MAP = {
 
 #Maps the number of train_envs to PC
 N_ENV_MAP = {
-    "An" : 30,  
+    "An" : 28,  
     "Ar": 30,
     "IT" :11
 }
@@ -59,6 +58,13 @@ def train(config: Optional[dict] = None):
     n_check_envs = config.get("n_check_envs", 5)
     n_eval_episodes = config.get("n_eval_episodes", 20)
     pc = config.get("PC", "An")
+    target_angle_train = config.get("target_angle_train")
+    target_angle_check = config.get("target_angle_check")
+
+    if target_angle_train is None or target_angle_check is None:
+        raise ValueError(
+            "Missing target angle config. Please set both 'target_angle_train' and 'target_angle_check'."
+        )
 
     if algo == "PPO":
         hyperparams = config.get("model_kwargs_PPO")
@@ -86,7 +92,7 @@ def train(config: Optional[dict] = None):
     wandb.save("configurations/config_3DOF.py", base_path="configurations", policy="now")
 
     print("\ncreating CONTROL env:")
-    env_control = Env_Class(config=config)
+    env_control = Env_Class(config=config, target_angle=target_angle_check)
     #Checks if Costum env corresponds GymAPI  
     check_env(env_control)
     env_control.close()
@@ -97,7 +103,7 @@ def train(config: Optional[dict] = None):
         Env_Class,
         seed = 1111,
         n_envs = n_check_envs,
-        env_kwargs={"config":config},
+        env_kwargs={"config":config, "target_angle": target_angle_check},
         vec_env_cls=DummyVecEnv,
         monitor_dir=f"./monitor_logs/{algo}_training/logs_check_{timestamp}",
         monitor_kwargs= {"info_keywords": ("distance","energy","reached_target","truncated_distance", "total_steps_passed_in_goal_range", "stayed_in_target", "floor_crash")}
@@ -115,13 +121,13 @@ def train(config: Optional[dict] = None):
 
     print(f"\ncreating {n_train_envs} TRAIN envs:")
     
-    stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=20 , min_evals=5)
+    stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=5 , min_evals=5)
 
     vec_train_env = make_vec_env(
         Env_Class,
         seed = seed,
-        n_envs = n_train_envs,
-        env_kwargs={"config":config},
+        n_envs = n_train_envs,  
+        env_kwargs={"config":config, "target_angle": target_angle_train},
         vec_env_cls=SubprocVecEnv,
         monitor_dir=f"./monitor_logs/{algo}_training/logs_train_{timestamp}",
         monitor_kwargs= {"info_keywords": ("distance","energy","reached_target","truncated_distance")}
