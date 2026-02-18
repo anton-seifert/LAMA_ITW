@@ -1,4 +1,4 @@
--planerer roboter sehr schlecht beim trianing, da Ziele nicht erreichbar
+- planerer roboter sehr schlecht beim trianing, da Ziele nicht erreichbar
     max range wird falsch berechnet, weil floor etc auch in die bodies zählen
 
 - Render (planare roboter)
@@ -46,3 +46,28 @@ haben sehr gute modelle auf dem papier trainiert, die aber kompletter schrott wa
 
 - reward hacking
     max steps kleiner machen, damit reward hacking sihc nicht lohnt
+
+Feature Verlauf:
+- 
+- 2DOF:
+- Rewards: Energy/Distance
+- Tensoarboard -> mointor -> eval callback
+- main methode -> config datei mit immer mehr Einstellungs möglichkeiten
+- StopTrainingonnomodellimprovment
+- WandB
+- Rewards: truncation afer no distance improvment 
+- 3DOF:
+- needs to stay in target range
+- OPtuna: Hyprparameter
+- Reward: doesnt truncate anymore if already in goal space
+- Optuna:Reward
+- eval method with succes rate
+- Reward: added punishment for hitting joint limits, added punishment for distance scaling with passed time steps
+- Updated 3DOF Geometry
+- Reward: Singularity punishment
+- Reward: punishment for too close to floor
+- Reward: new energy
+- Plotting Rewards after Render
+- Custom Start Psiton und Target
+- Kontinuumsrobter:
+- Test Set mit 500 Set
