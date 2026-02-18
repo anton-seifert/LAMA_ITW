@@ -10,7 +10,7 @@ import time
 
 class RobotWorldEnv(gym.Env):
     
-    def __init__(self, config: Optional[dict] = None, render_mode: Optional[str] = None):
+    def __init__(self, config: Optional[dict] = None, render_mode: Optional[str] = None, target_angle: Optional[float] = None):
         print("creating 3DOF_env...")
         #LOAD Variables from config
         #first value = key from dict, second value fallback default value
@@ -28,6 +28,7 @@ class RobotWorldEnv(gym.Env):
         self.singularity_reward_factor = config.get("singularity_reward_factor")
         self.crash_reward_factor = config.get("crash_reward")
         self.floor_distance_reward_factor = config.get("floor_distance_reward")
+        self.target_angle = target_angle
 
         self.options = None
 
@@ -422,7 +423,7 @@ class RobotWorldEnv(gym.Env):
         geoms = self.model.geom_size
         lenghts = [np.max(geom) for geom in geoms]
         max_range = sum(lenghts)
-        phi = self.np_random.uniform(low=0, high= 2*np.pi)
+        phi = self.np_random.uniform(low=0, high= self.target_angle)
         theta= 0
         if(self.model_path == "assets/test_robot.xml"):
             theta = np.pi/2 
