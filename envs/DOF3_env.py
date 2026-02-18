@@ -67,8 +67,8 @@ class RobotWorldEnv(gym.Env):
         kinematic: 3 TCP pos, xyz
         target: 3 Target_pos xyz
         # """
-
-        number_of_agent_observations = self.model.nq + 3*self.model.nv
+        # Angle Pos(sin and cos), angle vel, angle acc, actions
+        number_of_agent_observations = self.model.nq + 4*self.model.nv
         #print(f"number of agent observations {number_of_agent_observations}")
         self.observation_space = gym.spaces.Dict(
             {
@@ -102,9 +102,17 @@ class RobotWorldEnv(gym.Env):
 
         Returns:
             dict: Observation with agent and target positions
-        """
+        """ 
         
-        agent_obs = np.concatenate([self.data.qpos.flat[:], 
+
+        qpos = self.data.qpos
+        qpos_sin = np.sin(qpos) #pos is continuous no jumps at 180° etc
+        qpos_cos = np.cos(qpos)
+       
+        
+
+        agent_obs = np.concatenate([qpos_sin.flat[:], 
+                                    qpos_cos.flat[:],
                                     self.data.qvel.flat[:], 
                                     self.data.qacc.flat[:],
                                     self.last_action.flat[:]]).astype(np.float32)
