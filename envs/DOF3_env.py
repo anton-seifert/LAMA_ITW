@@ -82,10 +82,11 @@ class RobotWorldEnv(gym.Env):
                 "tcp_pos": gym.spaces.Box(low=-np.inf, high=np.inf, shape=(3,), dtype = np.float32),
 
                 #Target Pos
-                "target": gym.spaces.Box(low=-np.inf,high=np.inf, shape=(3,), dtype=np.float64),  # [x, y, z] coordinates
+                #"target": gym.spaces.Box(low=-np.inf,high=np.inf, shape=(3,), dtype=np.float64),  # [x, y, z] coordinates
 
-                #distance between TCP and Target
-                "distance": gym.spaces.Box(low=-np.inf,high=np.inf, shape=(3,), dtype=np.float64),  # [x, y, z] coordinates
+                #distance between TCP and Target, and L2 Norm of distance
+                "distance": gym.spaces.Box(low=-np.inf,high=np.inf, shape=(4,), dtype=np.float64),  # [x, y, z] coordinates
+
 
             }
         )
@@ -119,15 +120,26 @@ class RobotWorldEnv(gym.Env):
         
         sensors_obs = np.concatenate([self.data.sensordata]).astype(np.float32)
 
+        #TCP Obs
         tcp_pos_obs = self.data.site_xpos[self.tcp_id].copy().astype(np.float32)
 
-        distance_obs = self.target_pos-tcp_pos_obs           
+        #raw relative target vector equals direction
+        relative_target_vector = self.target_pos-tcp_pos_obs
+         # Rotation der Hand (TCP) holen
+        tcp_rot = self.data.site_xmat[self.tcp_id].reshape(3, 3)
+        # Ins lokale System der Hand rotieren (Transponierte Matrix)
+
+        relative_target_vec_local = tcp_rot.T@relative_target_vector 
+        #raw distance equals pull towards target
+        L2_distance = np.linalg.norm(relative_target_vec_local)
+
+        distance_obs = np.concatenate([relative_target_vec_local.flat[:], [L2_distance]])        
                                     
 
         return {"agent": agent_obs,
                 "sensors": sensors_obs,
                 "tcp_pos": tcp_pos_obs,
-                "target": self.target_pos,
+                #"target": self.target_pos,
                 "distance" : distance_obs}
     
     def _get_info(self):
