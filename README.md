@@ -19,10 +19,11 @@ Opening Optuna Dashboard:
 optuna-dashboard sqlite:///optuna_tune.db
 
 # General Infos:
-We trained 3 different Robots: 2DOF,3DOF and a ContiuumsRobot
-Each one has his own config, train, env file.
-The ContinuumsRobot is still in development, so the files are found in its respective feature branch.
-Our models are saved and differentiated by their timestamp, so for loading our models, you've got to recreate our folder structure. This is easiest done by launching(run.py, run3DOF.py) a full training cycle and terminating it after the first evalCallback. (might have to comment out WandB Init or run without tracking(3))
+- We trained 3 different Robots: 2DOF,3DOF and a ContiuumsRobot
+- Each one has his own config, train, env file.
+- The ContinuumsRobot is still in development, so the files are found in its respective feature branch.
+- Our models are saved and differentiated by their timestamp, so for loading our models, you've got to recreate our folder structure. This is easiest done by launching(run.py, run3DOF.py) a full training cycle and terminating it after the first evalCallback. (might have to comment out WandB Init or run without tracking(3))
+- best models(config, zip, vecnorm) and further videos are found in Media&Models folder
 
 # General Structure:
 - the run(...).py runs a whole training run. Includes: loading configurations, launching training, creating vecEnvs, testing the Modell against our testset and Rendering one Example
