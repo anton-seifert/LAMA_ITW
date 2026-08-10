@@ -1,0 +1,39 @@
+<mujoco model="joint_feder_test">
+    <compiler angle="degree"/>
+    <option gravity="0 0 -9.81" timestep="0.001"/>
+
+    <visual>
+        <headlight ambient="0.5 0.5 0.5" diffuse="0.5 0.5 0.5" specular="0 0 0"/>
+    </visual>
+
+    <asset>
+        <texture name="grid_tex" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 .2 .3"
+             width="100" height="100" mark="edge" markrgb=".8 .8 .8"/>
+        <material name="grid_material" texture="grid_tex" texrepeat="2 2" texuniform="true"/>
+    </asset>
+
+    <worldbody>
+        <light directional="true" diffuse=".8 .8 .8" specular=".2 .2 .2" pos="0 0 5" dir="0 0 -1"/>
+        <geom name="floor" type="plane" pos="0 0 -0.5" size="2 2 0.1" material="grid_material"/>
+
+        <!-- Fester Aufhaengepunkt der Feder -->
+        <body name="anchor" pos="0 0 1">
+            <geom type="sphere" size="0.02" rgba="1 1 1 1"/>
+        </body>
+
+        <!--
+            springref = Ruhelaenge relativ zur Ausgangsposition (0.3 heisst,
+            der Joint moechte 0.3 m weiter unten stehen als seine Nullstellung)
+            stiffness = Federkonstante
+            damping   = Daempfung, verhindert endloses Schwingen
+        -->
+        <body name="mass" pos="0 0 0.7">
+            <joint name="slide1" type="slide" axis="0 0 1"
+                   springref="0.3" stiffness="1000" damping="1"/>
+            <geom type="sphere" size="0.03" mass="1" rgba="1 0 0.3 1"/>
+
+            <!-- Sichtbare "Federstange" zwischen Anker und Masse -->
+            <geom type="cylinder" size="0.005" fromto="0 0 0.3 0 0 0" rgba="0.7 0.7 0.7 1" contype="0" conaffinity="0"/>
+        </body>
+    </worldbody>
+</mujoco>
