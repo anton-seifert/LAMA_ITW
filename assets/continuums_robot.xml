@@ -4,7 +4,7 @@
     <!--coordinate local sorgt dafür dass children das parent coordsys benutzen und nicht das globale Koordsys'-->
     <!-- inertiafromgeom="true" Massenträgheitsmatrix wird von mujoco anhand der geometrie berechnet -->
     <default>
-        <joint stiffness ="0.5" damping="0.1" springref="0" range="0 45" limited="true"/>
+        <joint stiffness ="2" damping="0.1" springref="0" range="0 45" limited="true"/>
         <tendon stiffness="0" damping="0.1" width="0.005"/>
         <geom density="100" />
     </default>
@@ -47,6 +47,7 @@
             <body name="spine1" pos="0 0 0 ">
                 <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 1 0 1"/>
                 <joint name="joint1" type="ball"/>
+                
                 <site name="s11" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
                 <site name="s12" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
                 <site name="s13" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
@@ -55,6 +56,7 @@
                 <body name="spine2" pos="0 0 0.1 ">
                     <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 0.5 0 1"/>
                     <joint name="joint2" type="ball"/>
+                    
                     <site name="s21" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
                     <site name="s22" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
                     <site name="s23" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
@@ -63,6 +65,7 @@
                     <body name="spine3" pos="0 0 0.1 ">
                         <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 1 0 1"/>
                         <joint name="joint3" type="ball"/>
+                        
                         <site name="s31" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
                         <site name="s32" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
                         <site name="s33" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
@@ -71,6 +74,7 @@
                         <body name="spine4" pos="0 0 0.1 ">
                             <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 0.5 0 1"/>
                             <joint name="joint4" type="ball"/>
+                            
                             <site name="s41" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
                             <site name="s42" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
                             <site name="s43" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
@@ -79,6 +83,7 @@
                             <body name="spine5" pos="0 0 0.1 ">
                                 <geom type="capsule" size="0.03" fromto="0 0 0 0 0 0.1" rgba="0 1 0 1"/>
                                 <joint name="joint5" type="ball"/>
+                                
                                 <site name="s51" type="sphere" size="0.01" rgba="0 0 1 1" pos="0.04 0 0.05 " />
                                 <site name="s52" type="sphere" size="0.01" rgba="0 0 1 1" pos="0 0.04 0.05 " />
                                 <site name="s53" type="sphere" size="0.01" rgba="0 0 1 1" pos="-0.04 0 0.05 " />
